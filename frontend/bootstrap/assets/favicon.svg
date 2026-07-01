@@ -1,0 +1,9 @@
+<!-- 
+This is a simple favicon SVG that will be referenced in place of a favicon.ico file
+-->
+<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+  <rect width="16" height="16" fill="#4CAF50"/>
+  <circle cx="8" cy="4" r="2" fill="#FF0000"/>
+  <circle cx="8" cy="8" r="2" fill="#FFFF00"/>
+  <circle cx="8" cy="12" r="2" fill="#00FF00"/>
+</svg>

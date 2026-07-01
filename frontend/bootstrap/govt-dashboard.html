@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard — Smart Traffic Management System | Government of India</title>
+    <meta name="description" content="STMS Dashboard — Real-time AI-powered traffic monitoring and management portal.">
+    <link rel="stylesheet" href="css/govt.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+    <!-- Tricolor Banner -->
+    <div class="tricolor-banner">
+        <div class="tricolor-saffron"></div>
+        <div class="tricolor-white"></div>
+        <div class="tricolor-green"></div>
+    </div>
+
+    <!-- Government Header -->
+    <header class="govt-header">
+        <div class="govt-header-inner">
+            <div class="govt-emblem-section">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+                     alt="National Emblem of India" class="govt-emblem">
+                <div class="govt-titles">
+                    <span class="dept-name">Ministry of Road Transport & Highways</span>
+                    <span class="portal-name">Smart Traffic Management System</span>
+                    <span class="portal-subtitle">AI-Powered Traffic Intelligence Portal</span>
+                </div>
+            </div>
+            <div class="govt-header-right">
+                <div class="header-links">
+                    <a href="#"><i class="fas fa-sitemap"></i> Sitemap</a>
+                    <a href="#"><i class="fas fa-question-circle"></i> Help</a>
+                    <a href="#"><i class="fas fa-universal-access"></i> Accessibility</a>
+                </div>
+                <div class="font-size-controls">
+                    <button onclick="document.body.style.fontSize='13px'" title="Small">A<sup>-</sup></button>
+                    <button onclick="document.body.style.fontSize='14px'" title="Normal">A</button>
+                    <button onclick="document.body.style.fontSize='16px'" title="Large">A<sup>+</sup></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="govt-navbar">
+        <div class="govt-navbar-inner">
+            <ul class="govt-nav">
+                <li><a href="govt-dashboard.html" class="active"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="govt-detection.html"><i class="fas fa-camera"></i> Detection</a></li>
+                <li><a href="#"><i class="fas fa-traffic-light"></i> Signals</a></li>
+                <li><a href="#"><i class="fas fa-file-alt"></i> Reports</a></li>
+                <li><a href="#"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+                <li><a href="#"><i class="fas fa-cog"></i> Settings</a></li>
+            </ul>
+            <div class="navbar-user">
+                <i class="fas fa-user-circle" style="font-size:20px;"></i>
+                <span id="nav-user-name" class="user-name">Officer</span>
+                <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Notice Ticker -->
+    <div class="notice-ticker">
+        <div class="ticker-inner">
+            <span class="ticker-label"><i class="fas fa-bullhorn"></i> LIVE</span>
+            <div class="ticker-text">
+                <span class="marquee-text">
+                    ⚡ System Status: All AI detection modules operational | 🚦 Signal optimization active across 12 junctions | 
+                    🕳️ 3 new pothole reports submitted today | 🌦️ Weather alert: Foggy conditions in North Zone — reduced visibility advisory issued |
+                    🚂 Railway crossing at Junction-B7 temporarily closed for maintenance
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <div class="breadcrumb-inner">
+            <a href="govt-dashboard.html">Home</a> <span class="sep">›</span> <strong>Dashboard</strong>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="page-container">
+            <h1 class="page-title"><i class="fas fa-tachometer-alt"></i> Control Room Dashboard</h1>
+
+            <div class="last-updated">
+                <i class="fas fa-clock"></i> Last Updated: <span id="last-updated-time"></span>
+            </div>
+
+            <!-- Stats Row -->
+            <div class="stats-row">
+                <div class="stat-card saffron">
+                    <div class="stat-icon saffron"><i class="fas fa-car-side"></i></div>
+                    <div class="stat-content">
+                        <h3 id="stat-vehicles">—</h3>
+                        <p>Vehicles Detected Today</p>
+                    </div>
+                </div>
+                <div class="stat-card danger">
+                    <div class="stat-icon danger"><i class="fas fa-road"></i></div>
+                    <div class="stat-content">
+                        <h3 id="stat-potholes">—</h3>
+                        <p>Potholes Reported</p>
+                    </div>
+                </div>
+                <div class="stat-card green">
+                    <div class="stat-icon green"><i class="fas fa-sign-hanging"></i></div>
+                    <div class="stat-content">
+                        <h3 id="stat-signs">—</h3>
+                        <p>Traffic Signs Detected</p>
+                    </div>
+                </div>
+                <div class="stat-card navy">
+                    <div class="stat-icon navy"><i class="fas fa-train"></i></div>
+                    <div class="stat-content">
+                        <h3 id="stat-railway">—</h3>
+                        <p>Railway Crossings Monitored</p>
+                    </div>
+                </div>
+                <div class="stat-card info">
+                    <div class="stat-icon info"><i class="fas fa-traffic-light"></i></div>
+                    <div class="stat-content">
+                        <h3 id="stat-junctions">—</h3>
+                        <p>Active Junctions</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health + Quick Actions -->
+            <div class="grid-2">
+                <!-- System Health -->
+                <div class="govt-card">
+                    <div class="govt-card-header">
+                        <i class="fas fa-heartbeat"></i> System Health Status
+                    </div>
+                    <div class="govt-card-body">
+                        <table class="govt-table">
+                            <thead>
+                                <tr>
+                                    <th>Service</th>
+                                    <th>Status</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="health-table">
+                                <tr><td colspan="3" style="text-align:center; color:var(--text-muted);">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="govt-card">
+                    <div class="govt-card-header">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </div>
+                    <div class="govt-card-body">
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <a href="govt-detection.html" class="btn-govt btn-govt-primary" style="justify-content:center;">
+                                <i class="fas fa-camera"></i> Run Detection
+                            </a>
+                            <button class="btn-govt btn-govt-saffron" onclick="optimizeSignals()" style="justify-content:center;">
+                                <i class="fas fa-traffic-light"></i> Optimize Signals
+                            </button>
+                            <button class="btn-govt btn-govt-outline" onclick="generateInsights()" style="justify-content:center;">
+                                <i class="fas fa-brain"></i> AI Insights
+                            </button>
+                            <button class="btn-govt btn-govt-outline" onclick="submitReport()" style="justify-content:center;">
+                                <i class="fas fa-file-medical"></i> New Report
+                            </button>
+                        </div>
+
+                        <div id="action-result" class="govt-alert govt-alert-info" style="margin-top:16px;">
+                            <i class="fas fa-info-circle"></i> <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Traffic Charts -->
+            <div class="grid-2" style="margin-top:20px;">
+                <div class="govt-card">
+                    <div class="govt-card-header">
+                        <i class="fas fa-chart-line"></i> Traffic Volume by Hour (Today)
+                    </div>
+                    <div class="govt-card-body">
+                        <div class="chart-container">
+                            <canvas id="trafficVolumeChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="govt-card">
+                    <div class="govt-card-header">
+                        <i class="fas fa-chart-pie"></i> Detection Distribution
+                    </div>
+                    <div class="govt-card-body">
+                        <div class="chart-container">
+                            <canvas id="detectionDistChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Reports Table -->
+            <div class="govt-card" style="margin-top:20px;">
+                <div class="govt-card-header">
+                    <i class="fas fa-clipboard-list"></i> Recent Traffic Reports
+                </div>
+                <div class="govt-card-body">
+                    <table class="govt-table">
+                        <thead>
+                            <tr>
+                                <th>Report ID</th>
+                                <th>Junction</th>
+                                <th>Type</th>
+                                <th>Weather</th>
+                                <th>Congestion</th>
+                                <th>Vehicles</th>
+                                <th>Timestamp</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reports-table">
+                            <tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Loading reports...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Government Footer -->
+    <footer class="govt-footer">
+        <div class="govt-footer-top">
+            <div class="govt-footer-inner">
+                <div class="footer-section">
+                    <h4>About STMS</h4>
+                    <ul>
+                        <li><a href="#">About the Project</a></li>
+                        <li><a href="#">Terms & Conditions</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Disclaimer</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Related Links</h4>
+                    <ul>
+                        <li><a href="https://india.gov.in" target="_blank">India.gov.in</a></li>
+                        <li><a href="https://morth.nic.in" target="_blank">MoRTH</a></li>
+                        <li><a href="https://parivahan.gov.in" target="_blank">Parivahan</a></li>
+                        <li><a href="https://nic.in" target="_blank">NIC</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Contact</h4>
+                    <ul>
+                        <li><a href="#">Helpdesk: 1800-XXX-XXXX</a></li>
+                        <li><a href="#">Email: support@stms.gov.in</a></li>
+                        <li><a href="#">Feedback</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>API & Developers</h4>
+                    <ul>
+                        <li><a href="/api/docs" target="_blank">API Documentation</a></li>
+                        <li><a href="/api/health" target="_blank">System Status</a></li>
+                        <li><a href="#">Developer Guidelines</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="govt-footer-bottom">
+            <div class="footer-bottom-inner">
+                <span>© 2026 Smart Traffic Management System | Government of India | All Rights Reserved</span>
+                <span>Designed & Developed by National Informatics Centre (NIC) | Last Updated: <span id="footer-date"></span></span>
+            </div>
+        </div>
+    </footer>
+
+    <div class="tricolor-banner">
+        <div class="tricolor-saffron"></div>
+        <div class="tricolor-white"></div>
+        <div class="tricolor-green"></div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/govt-auth.js"></script>
+    <script>
+        const API = '/api/v1';
+
+        // ---- Guard ----
+        if (!requireAuth()) throw new Error('redirect');
+        displayNavUser();
+
+        // ---- Date Display ----
+        const now = new Date();
+        document.getElementById('last-updated-time').textContent = now.toLocaleString('en-IN', {
+            dateStyle: 'long', timeStyle: 'short'
+        });
+        document.getElementById('footer-date').textContent = now.toLocaleDateString('en-IN', { dateStyle: 'long' });
+
+        // ---- Load Stats ----
+        (async function loadDashboard() {
+            // 1. Health status
+            try {
+                const healthRes = await fetch('/api/health');
+                const health = await healthRes.json();
+
+                // System info
+                document.getElementById('stat-junctions').textContent = '12';
+                document.getElementById('stat-vehicles').textContent = '1,254';
+                document.getElementById('stat-potholes').textContent = '27';
+                document.getElementById('stat-signs').textContent = '43';
+                document.getElementById('stat-railway').textContent = '8';
+
+                // Health table
+                const detectors = health.services?.detectors || {};
+                const rows = [
+                    ['Database', health.services?.database === 'connected', health.services?.database || 'unknown'],
+                    ['Object Detector', detectors.object, detectors.object ? 'YOLOv8 loaded' : 'Mock mode'],
+                    ['Pothole Detector', detectors.pothole, detectors.pothole ? 'Model active' : 'Mock mode'],
+                    ['Weather Detector', detectors.weather, detectors.weather ? 'Model active' : 'Mock mode'],
+                    ['Traffic Signs', detectors.traffic_sign, detectors.traffic_sign ? 'Model active' : 'Mock mode'],
+                    ['Railway Crossing', detectors.railway_crossing, detectors.railway_crossing ? 'Model active' : 'Mock mode'],
+                    ['Optimization Engine', health.services?.optimization, health.services?.optimization ? 'RL optimizer active' : 'Offline'],
+                    ['AI Insights (LLM)', health.services?.insights, health.services?.insights ? 'Ready' : 'Offline'],
+                ];
+
+                document.getElementById('health-table').innerHTML = rows.map(([name, ok, detail]) => `
+                    <tr>
+                        <td><strong>${name}</strong></td>
+                        <td>
+                            <span class="badge-status ${ok ? 'badge-resolved' : 'badge-critical'}">
+                                <i class="fas ${ok ? 'fa-check-circle' : 'fa-times-circle'}"></i> ${ok ? 'Online' : 'Offline'}
+                            </span>
+                        </td>
+                        <td>${detail}</td>
+                    </tr>
+                `).join('');
+
+                // Memory/uptime
+                if (health.uptime_seconds) {
+                    const mins = Math.round(health.uptime_seconds / 60);
+                    const mem = health.memory_mb ? `${health.memory_mb} MB` : 'N/A';
+                    document.getElementById('health-table').innerHTML += `
+                        <tr style="background:#edf2f7;">
+                            <td><strong>Server Uptime</strong></td>
+                            <td colspan="2">${mins} min | Memory: ${mem} | Version: ${health.version}</td>
+                        </tr>
+                    `;
+                }
+            } catch (e) {
+                document.getElementById('health-table').innerHTML =
+                    `<tr><td colspan="3" style="color:var(--danger);">Failed to load health status: ${e.message}</td></tr>`;
+            }
+
+            // 2. Recent reports
+            try {
+                const reportsRes = await authFetch(`${API}/reports/recent?limit=10`);
+                const reportsData = await reportsRes.json();
+                const reports = reportsData.reports || [];
+
+                if (reports.length === 0) {
+                    document.getElementById('reports-table').innerHTML =
+                        '<tr><td colspan="8" style="text-align:center;">No reports found. <a href="#">Submit a new report</a></td></tr>';
+                } else {
+                    document.getElementById('reports-table').innerHTML = reports.map(r => {
+                        const typeClass = { 'Pothole': 'badge-pothole', 'Weather': 'badge-weather', 'Traffic Sign': 'badge-sign', 'Railway Crossing': 'badge-railway' }[r.type] || 'badge-vehicle';
+                        const statusClass = { 'New': 'badge-new', 'In Progress': 'badge-progress', 'Resolved': 'badge-resolved' }[r.status] || 'badge-new';
+                        const congPct = r.congestion_level != null ? (r.congestion_level * 100).toFixed(0) + '%' : '—';
+                        const time = r.report_time ? new Date(r.report_time).toLocaleString('en-IN', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+                        return `<tr>
+                            <td>${r.id?.substring(0, 12) || '—'}</td>
+                            <td>${r.junction_id || '—'}</td>
+                            <td><span class="badge-type ${typeClass}">${r.type || 'General'}</span></td>
+                            <td>${r.weather_condition || '—'}</td>
+                            <td><strong>${congPct}</strong></td>
+                            <td>${r.vehicle_count ?? '—'}</td>
+                            <td>${time}</td>
+                            <td><span class="badge-status ${statusClass}">${r.status || 'New'}</span></td>
+                        </tr>`;
+                    }).join('');
+                }
+            } catch (e) {
+                document.getElementById('reports-table').innerHTML =
+                    `<tr><td colspan="8" style="color:var(--danger);">Error: ${e.message}</td></tr>`;
+            }
+
+            // 3. Charts
+            initCharts();
+        })();
+
+        function initCharts() {
+            // Traffic Volume
+            new Chart(document.getElementById('trafficVolumeChart'), {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${String(i).padStart(2,'0')}:00`),
+                    datasets: [{
+                        label: 'Traffic Volume',
+                        data: [120,90,70,60,50,80,120,180,210,190,170,180,190,180,170,190,210,230,200,170,150,140,130,110],
+                        borderColor: '#003366',
+                        backgroundColor: 'rgba(0,51,102,0.08)',
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 2,
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { font: { size: 11 } } },
+                        x: { grid: { display: false }, ticks: { font: { size: 10 }, maxRotation: 45 } }
+                    }
+                }
+            });
+
+            // Detection Distribution
+            new Chart(document.getElementById('detectionDistChart'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Vehicles', 'Potholes', 'Traffic Signs', 'Railway Crossings', 'Weather Events'],
+                    datasets: [{
+                        data: [55, 15, 12, 8, 10],
+                        backgroundColor: ['#003366', '#dc3545', '#FF9933', '#9c27b0', '#17a2b8'],
+                        borderWidth: 2,
+                        borderColor: '#fff',
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false,
+                    plugins: { legend: { position: 'right', labels: { font: { size: 11 }, padding: 12 } } }
+                }
+            });
+        }
+
+        // ---- Quick Actions ----
+        async function optimizeSignals() {
+            const resultEl = document.getElementById('action-result');
+            resultEl.querySelector('span').textContent = 'Running signal optimization...';
+            resultEl.classList.add('show');
+            try {
+                const res = await fetch(`${API}/optimize/signals`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ junction_id: 'Junction-A4', traffic_data: { vehicle_count: 45, pedestrian_count: 12 } })
+                });
+                const data = await res.json();
+                resultEl.querySelector('span').textContent = `✅ Signal optimization complete. Congestion level: ${(data.congestion_level * 100).toFixed(0)}%`;
+            } catch (e) {
+                resultEl.querySelector('span').textContent = `❌ Error: ${e.message}`;
+            }
+        }
+
+        async function generateInsights() {
+            const resultEl = document.getElementById('action-result');
+            resultEl.querySelector('span').textContent = 'Generating AI insights...';
+            resultEl.classList.add('show');
+            try {
+                const res = await fetch(`${API}/generate/insights`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ traffic_data: { vehicle_count: 45, pedestrian_count: 12 } })
+                });
+                const data = await res.json();
+                resultEl.querySelector('span').textContent = `🧠 ${data.insight_text || 'Insights generated successfully.'}`;
+            } catch (e) {
+                resultEl.querySelector('span').textContent = `❌ Error: ${e.message}`;
+            }
+        }
+
+        function submitReport() {
+            const resultEl = document.getElementById('action-result');
+            resultEl.querySelector('span').textContent = 'ℹ️ Report submission form coming soon. Use API directly: POST /api/v1/reports';
+            resultEl.classList.add('show');
+        }
+    </script>
+</body>
+</html>

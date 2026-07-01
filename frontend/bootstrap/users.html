@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic Management System - User Dashboard</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #3f51b5;
+            margin-bottom: 20px;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .user-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        .user-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s ease;
+        }
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        .user-name {
+            font-size: 18px;
+            color: #3f51b5;
+            margin-bottom: 5px;
+        }
+        .user-email {
+            color: #666;
+            margin-bottom: 10px;
+        }
+        .user-role {
+            display: inline-block;
+            background-color: #e3f2fd;
+            color: #1976d2;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        .admin {
+            background-color: #fce4ec;
+            color: #e91e63;
+        }
+        .status {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+        .error {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+        button {
+            background-color: #3f51b5;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #303f9f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Traffic Management System</h1>
+        
+        <div class="card">
+            <h2>System Users</h2>
+            <p>Below are the registered users in the system:</p>
+            
+            <div id="userStatus" class="status">
+                Loading users...
+            </div>
+            
+            <div id="userList" class="user-list">
+                <!-- Users will be populated here -->
+            </div>
+            
+            <button id="refreshUsers">Refresh Users</button>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Define the API URL
+            const API_URL = 'http://localhost:8001';
+            
+            // Function to fetch users
+            async function fetchUsers() {
+                const userStatus = document.getElementById('userStatus');
+                const userList = document.getElementById('userList');
+                
+                userStatus.classList.remove('error');
+                userStatus.textContent = 'Loading users...';
+                userList.innerHTML = '';
+                
+                try {
+                    // Send a GET request to the backend's API endpoint
+                    const response = await fetch(`${API_URL}/api/users`);
+                    
+                    // Check if the response was successful
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    
+                    // Parse the JSON data from the response
+                    const data = await response.json();
+                    
+                    if (data.success) {
+                        // Update status
+                        userStatus.textContent = `Successfully loaded ${data.count} users`;
+                        
+                        // Check if we have users
+                        if (data.count === 0) {
+                            userList.innerHTML = '<p>No users found in the system.</p>';
+                            return;
+                        }
+                        
+                        // Populate the user list
+                        data.users.forEach(user => {
+                            const userCard = document.createElement('div');
+                            userCard.className = 'user-card';
+                            
+                            const userName = document.createElement('div');
+                            userName.className = 'user-name';
+                            userName.textContent = user.name;
+                            
+                            const userEmail = document.createElement('div');
+                            userEmail.className = 'user-email';
+                            userEmail.textContent = user.email;
+                            
+                            const userRole = document.createElement('div');
+                            userRole.className = user.role === 'admin' ? 'user-role admin' : 'user-role';
+                            userRole.textContent = user.role || 'user';
+                            
+                            userCard.appendChild(userName);
+                            userCard.appendChild(userEmail);
+                            userCard.appendChild(userRole);
+                            
+                            userList.appendChild(userCard);
+                        });
+                    } else {
+                        throw new Error(data.message || 'Failed to load users');
+                    }
+                } catch (error) {
+                    console.error("Could not fetch users:", error);
+                    userStatus.textContent = `Error: ${error.message}`;
+                    userStatus.classList.add('error');
+                }
+            }
+            
+            // Load users when the page loads
+            fetchUsers();
+            
+            // Add refresh button event listener
+            document.getElementById('refreshUsers').addEventListener('click', fetchUsers);
+        });
+    </script>
+</body>
+</html>

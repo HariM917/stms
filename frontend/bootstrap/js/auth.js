@@ -1,0 +1,437 @@
+// Authentication JS functions
+
+// API URL - update this to the correct API URL when deployed
+// The full path including /api should be used
+const API_URL = '/api';  // Prepend /api to match backend structure
+console.log('API_URL initialized:', API_URL);
+
+// DOM Elements
+// We'll get these elements inside functions instead of globally
+// to avoid errors when elements don't exist on certain pages
+
+// Helper functions
+function showError(message) {
+    console.log('Showing error message:', message);
+    try {
+        const errorMessage = document.getElementById('error-message');
+        if (errorMessage && errorMessage.classList) {
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('d-none');
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                try {
+                    errorMessage.classList.add('d-none');
+                } catch (error) {
+                    console.error('Error hiding error message:', error);
+                }
+            }, 5000);
+        } else {
+            console.error('Error message element not found or classList is null');
+        }
+    } catch (error) {
+        console.error('Error in showError function:', error);
+    }
+}
+
+function showSuccess(message) {
+    console.log('Showing success message:', message);
+    try {
+        const successMessage = document.getElementById('success-message');
+        if (successMessage && successMessage.classList) {
+            successMessage.textContent = message;
+            successMessage.classList.remove('d-none');
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                try {
+                    successMessage.classList.add('d-none');
+                } catch (error) {
+                    console.error('Error hiding success message:', error);
+                }
+            }, 5000);
+        } else {
+            console.error('Success message element not found or classList is null');
+        }
+    } catch (error) {
+        console.error('Error in showSuccess function:', error);
+    }
+}
+
+function setButtonLoading(buttonId, isLoading) {
+    console.log(`Setting button ${buttonId} loading state to ${isLoading}`);
+    
+    const button = document.getElementById(buttonId);
+    const buttonText = document.getElementById(`${buttonId}-text`);
+    const buttonSpinner = document.getElementById(`${buttonId}-spinner`);
+    
+    console.log(`Button elements:`, {button, buttonText, buttonSpinner});
+    
+    if (!button || !buttonText || !buttonSpinner) {
+        console.error(`Button elements for ${buttonId} not found`);
+        return;
+    }
+    
+    try {
+        if (isLoading) {
+            button.disabled = true;
+            buttonText.classList.add('d-none');
+            buttonSpinner.classList.remove('d-none');
+        } else {
+            button.disabled = false;
+            buttonText.classList.remove('d-none');
+            buttonSpinner.classList.add('d-none');
+        }
+    } catch (error) {
+        console.error(`Error setting button ${buttonId} loading state:`, error);
+    }
+}
+
+// Cookie management
+function setCookie(name, value, days) {
+    let expires = '';
+    if (days) {
+        const date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = `; expires=${date.toUTCString()}`;
+    }
+    document.cookie = `${name}=${value || ''}${expires}; path=/`;
+}
+
+function getCookie(name) {
+    const nameEQ = name + '=';
+    const ca = document.cookie.split(';');
+    for(let i = 0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0) === ' ') c = c.substring(1);
+        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length);
+    }
+    return null;
+}
+
+function eraseCookie(name) {
+    document.cookie = `${name}=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;`;
+}
+
+// JWT Management
+function getToken() {
+    return localStorage.getItem('token') || getCookie('token');
+}
+
+function setToken(token, rememberMe = false) {
+    localStorage.setItem('token', token);
+    
+    if (rememberMe) {
+        // Store in cookie with 30 day expiration
+        setCookie('token', token, 30);
+    }
+}
+
+function clearToken() {
+    localStorage.removeItem('token');
+    eraseCookie('token');
+}
+
+function getUser() {
+    const userString = localStorage.getItem('user');
+    if (!userString) return null;
+    
+    try {
+        return JSON.parse(userString);
+    } catch (e) {
+        console.error('Error parsing user from localStorage:', e);
+        return null;
+    }
+}
+
+function setUser(user) {
+    localStorage.setItem('user', JSON.stringify(user));
+}
+
+function clearUser() {
+    localStorage.removeItem('user');
+}
+
+// Auth state
+function isLoggedIn() {
+    return !!getToken();
+}
+
+function isAuthenticated() {
+    return isLoggedIn();
+}
+
+function getCurrentUser() {
+    return getUser();
+}
+
+async function authenticatedFetch(url, options = {}) {
+    const token = getToken();
+    if (!token) {
+        throw new Error('Not authenticated');
+    }
+    
+    const headers = options.headers || {};
+    const newHeaders = {
+        ...headers,
+        'Authorization': `Bearer ${token}`
+    };
+    
+    const response = await fetch(url, {
+        ...options,
+        headers: newHeaders
+    });
+    
+    if (response.status === 401 || response.status === 403) {
+        console.warn('Authentication token invalid or expired. Logging out.');
+        logout();
+    }
+    
+    return response;
+}
+
+function logout() {
+    clearToken();
+    clearUser();
+    
+    // Redirect to login page
+    window.location.href = '/login.html';
+}
+
+// Setup functions
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Auth.js loaded');
+    
+    try {
+        // Setup logout button
+        const logoutBtn = document.getElementById('logout-btn');
+        if (logoutBtn) {
+            console.log('Setting up logout button');
+            logoutBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+        }
+        
+        // Setup login form
+        setupLoginForm();
+        
+        // Setup register form
+        setupRegisterForm();
+        
+        // Check auth state for protected pages
+        checkAuthState();
+        
+        // Display user info
+        displayUserInfo();
+    } catch (error) {
+        console.error('Error setting up auth components:', error);
+    }
+});
+
+// Login functions
+function setupLoginForm() {
+    const loginForm = document.getElementById('login-form');
+    if (!loginForm) {
+        console.error('Login form not found');
+        return;
+    }
+    
+    console.log('Setting up login form event listener');
+    
+    loginForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log('Login form submitted');
+        
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const rememberMeInput = document.getElementById('remember-me');
+        
+        if (!emailInput || !passwordInput) {
+            console.error('Required form elements not found:', 
+                          {emailInput, passwordInput});
+            showError('Form elements not found. Please try again later.');
+            return;
+        }
+        
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const rememberMe = rememberMeInput ? rememberMeInput.checked : false;
+        
+        console.log('Form values collected (not showing password):', {email, rememberMe});
+        
+        try {
+            setButtonLoading('login-btn', true);
+            
+            console.log('Sending login request to:', `/api/login`);
+            
+            const response = await fetch(`/api/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email, password })
+            });
+            
+            console.log('Login response received:', response.status, response.statusText);
+            
+            const data = await response.json();
+            console.log('Login response data:', data);
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Login failed');
+            }
+            
+            // Store token and user data
+            setToken(data.token, rememberMe);
+            setUser(data.user);
+            
+            // Redirect to dashboard
+            window.location.href = '/dashboard.html';
+        } catch (error) {
+            console.error('Login error:', error);
+            showError(error.message || 'Failed to login. Please check your credentials and try again.');
+        } finally {
+            setButtonLoading('login-btn', false);
+        }
+    });
+}
+
+// Register functions
+function setupRegisterForm() {
+    const registerForm = document.getElementById('register-form');
+    if (!registerForm) {
+        console.error('Register form not found');
+        return;
+    }
+    
+    console.log('Setting up register form event listener');
+    
+    registerForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        console.log('Register form submitted');
+        
+        const nameInput = document.getElementById('name');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        
+        if (!nameInput || !emailInput || !passwordInput || !confirmPasswordInput) {
+            console.error('Required form elements not found:', 
+                          {nameInput, emailInput, passwordInput, confirmPasswordInput});
+            showError('Form elements not found. Please try again later.');
+            return;
+        }
+        
+        const name = nameInput.value;
+        const email = emailInput.value;
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+        
+        console.log('Form values collected (not showing passwords):', {name, email});
+        
+        // Form validation
+        if (password !== confirmPassword) {
+            showError('Passwords do not match');
+            return;
+        }
+        
+        if (!validatePassword(password)) {
+            showError('Password must be at least 8 characters with uppercase, lowercase, and number');
+            return;
+        }
+        
+        try {
+            setButtonLoading('register-btn', true);
+            
+            // FIX: Changed from /api/auth/register to /api/register
+            console.log('Sending register request to:', `/api/register`);
+            
+            const response = await fetch(`/api/register`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ name, email, password })
+            });
+            
+            console.log('Register response received:', response.status, response.statusText);
+            
+            const data = await response.json();
+            console.log('Register response data:', data);
+            
+            if (!response.ok) {
+                throw new Error(data.message || 'Registration failed');
+            }
+            
+            // Show success message
+            showSuccess('Registration successful! Redirecting to login...');
+            
+            // Redirect after a brief delay to show the success message
+            setTimeout(() => {
+                window.location.href = '/login.html';
+            }, 2000);
+        } catch (error) {
+            console.error('Registration error:', error);
+            showError(error.message || 'Failed to register. Please try again.');
+        } finally {
+            setButtonLoading('register-btn', false);
+        }
+    });
+}
+
+// Validation functions
+function validatePassword(password) {
+    // At least 8 characters, at least 1 uppercase letter, 1 lowercase letter, and 1 number
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    return passwordRegex.test(password);
+}
+
+// Auth state check
+function checkAuthState() {
+    const token = getToken();
+    const currentPath = window.location.pathname;
+    console.log('Checking auth state. Token exists:', !!token, 'Path:', currentPath);
+    
+    // If on login or register page and already logged in, redirect to home
+    if (token && (currentPath.includes('login.html') || currentPath.includes('register.html'))) {
+        console.log('Already logged in, redirecting to dashboard');
+        window.location.href = '/dashboard.html';
+        return;
+    }
+    
+    // If on protected page and not logged in, redirect to login
+    const protectedPages = ['/dashboard.html', '/profile.html'];
+    const isProtectedPage = protectedPages.some(page => currentPath.includes(page));
+    
+    if (!token && isProtectedPage) {
+        console.log('Not logged in, redirecting to login');
+        window.location.href = '/login.html';
+        return;
+    }
+}
+
+// Display user info
+function displayUserInfo() {
+    const userElement = document.getElementById('user-name');
+    const userRoleElement = document.getElementById('user-role');
+    const userEmailElement = document.getElementById('user-email');
+    
+    if (!userElement && !userRoleElement && !userEmailElement) {
+        // No user display elements on this page
+        return;
+    }
+    
+    const user = getUser();
+    console.log('Displaying user info:', user);
+    
+    if (user) {
+        if (userElement) userElement.textContent = user.name || 'User';
+        if (userRoleElement) userRoleElement.textContent = user.role || 'User';
+        if (userEmailElement) userEmailElement.textContent = user.email || '';
+    } else {
+        if (userElement) userElement.textContent = 'Guest';
+        if (userRoleElement) userRoleElement.textContent = 'Guest';
+        if (userEmailElement) userEmailElement.textContent = '';
+    }
+}

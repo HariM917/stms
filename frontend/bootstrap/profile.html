@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Smart Traffic Management System</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #2c3e50;
+            color: white;
+            padding-top: 20px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar .nav-link.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .sidebar-header {
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .content-header {
+            padding: 20px 0;
+            border-bottom: 1px solid #eaeaea;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eaeaea;
+            font-weight: 600;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+        }
+        
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .user-profile .user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .user-profile .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .user-profile .user-role {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+        
+        .profile-header {
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-bottom: 15px;
+            border: 5px solid #f8f9fa;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .profile-info {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="sidebar-header">
+                    <h4>Smart Traffic Management</h4>
+                </div>
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link" href="dashboard.html">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-traffic-light"></i>
+                                Traffic Analysis
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-cloud-sun"></i>
+                                Weather Impact
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Pothole Detection
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-sign"></i>
+                                Traffic Signs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-train"></i>
+                                Railway Crossings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="profile.html">
+                                <i class="fas fa-user"></i>
+                                Profile
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-cog"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="logout-link">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="user-profile mt-auto">
+                    <img src="https://via.placeholder.com/40" alt="User avatar" id="sidebar-user-avatar">
+                    <div class="user-info">
+                        <p class="user-name" id="sidebar-user-name">Loading...</p>
+                        <p class="user-role" id="sidebar-user-role">User</p>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="content-header d-flex justify-content-between align-items-center">
+                    <h2>User Profile</h2>
+                </div>
+
+                <div class="alert alert-danger d-none" id="error-message" role="alert"></div>
+                <div class="alert alert-success d-none" id="success-message" role="alert"></div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="profile-header">
+                                    <img src="https://via.placeholder.com/120" class="profile-avatar" alt="User avatar" id="profile-avatar">
+                                    <h4 id="profile-name">Loading...</h4>
+                                    <p class="text-muted" id="profile-email">loading@example.com</p>
+                                    <button class="btn btn-sm btn-outline-primary" id="upload-avatar-btn">
+                                        <i class="fas fa-camera me-1"></i> Change Photo
+                                    </button>
+                                    <input type="file" id="avatar-upload" class="d-none" accept="image/*">
+                                </div>
+                                
+                                <div class="profile-info">
+                                    <div class="mb-3">
+                                        <small class="text-muted">Member Since</small>
+                                        <div id="profile-join-date">Loading...</div>
+                                    </div>
+                                    <div>
+                                        <small class="text-muted">Role</small>
+                                        <div id="profile-role">User</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">Activity Summary</div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>Reports Submitted</div>
+                                    <div><span class="badge bg-primary" id="reports-count">0</span></div>
+                                </div>
+                                <div class="d-flex justify-content-between mb-3">
+                                    <div>Issues Reported</div>
+                                    <div><span class="badge bg-warning" id="issues-count">0</span></div>
+                                </div>
+                                <div class="d-flex justify-content-between">
+                                    <div>Last Activity</div>
+                                    <div id="last-activity">Today</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-8">
+                        <div class="card">
+                            <div class="card-header">Account Information</div>
+                            <div class="card-body">
+                                <form id="profile-form">
+                                    <div class="mb-3">
+                                        <label for="name" class="form-label">Full Name</label>
+                                        <input type="text" class="form-control" id="name" name="name">
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="email" class="form-label">Email address</label>
+                                        <input type="email" class="form-control" id="email" name="email" readonly>
+                                        <small class="form-text text-muted">Email address cannot be changed</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="phone" class="form-label">Phone Number</label>
+                                        <input type="tel" class="form-control" id="phone" name="phone">
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary" id="update-profile-btn">
+                                        <span id="update-profile-text">Update Profile</span>
+                                        <span id="update-profile-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">Change Password</div>
+                            <div class="card-body">
+                                <form id="password-form">
+                                    <div class="mb-3">
+                                        <label for="current-password" class="form-label">Current Password</label>
+                                        <input type="password" class="form-control" id="current-password" name="current-password" required>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="new-password" class="form-label">New Password</label>
+                                        <input type="password" class="form-control" id="new-password" name="new-password" required minlength="8">
+                                        <small class="form-text text-muted">Password must be at least 8 characters with uppercase, lowercase, and number</small>
+                                    </div>
+                                    
+                                    <div class="mb-3">
+                                        <label for="confirm-password" class="form-label">Confirm New Password</label>
+                                        <input type="password" class="form-control" id="confirm-password" name="confirm-password" required minlength="8">
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary" id="update-password-btn">
+                                        <span id="update-password-text">Change Password</span>
+                                        <span id="update-password-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                        
+                        <div class="card">
+                            <div class="card-header">Danger Zone</div>
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6>Delete Account</h6>
+                                        <p class="text-muted mb-0">Once you delete your account, there is no going back. Please be certain.</p>
+                                    </div>
+                                    <button class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">Delete Account</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+    
+    <!-- Delete Account Modal -->
+    <div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deleteAccountModalLabel">Confirm Account Deletion</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete your account? This action cannot be undone.</p>
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        All your data, including reports and settings, will be permanently removed.
+                    </div>
+                    <div class="mb-3">
+                        <label for="delete-confirmation" class="form-label">Type "DELETE" to confirm</label>
+                        <input type="text" class="form-control" id="delete-confirmation" placeholder="DELETE">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn" disabled>Delete Account</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Authentication JS -->
+    <script src="js/auth.js"></script>
+    <!-- Profile JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check if user is authenticated
+            if (!isAuthenticated()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Setup logout functionality
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+            
+            // Load user profile data
+            loadUserProfile();
+            
+            // Setup form submission handlers
+            setupProfileForm();
+            setupPasswordForm();
+            setupDeleteAccount();
+            
+            // Setup avatar upload
+            document.getElementById('upload-avatar-btn').addEventListener('click', function() {
+                document.getElementById('avatar-upload').click();
+            });
+            
+            document.getElementById('avatar-upload').addEventListener('change', handleAvatarUpload);
+        });
+        
+        function showError(message) {
+            const errorMessage = document.getElementById('error-message');
+            errorMessage.textContent = message;
+            errorMessage.classList.remove('d-none');
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                errorMessage.classList.add('d-none');
+            }, 5000);
+        }
+        
+        function showSuccess(message) {
+            const successMessage = document.getElementById('success-message');
+            successMessage.textContent = message;
+            successMessage.classList.remove('d-none');
+            
+            // Hide after 5 seconds
+            setTimeout(() => {
+                successMessage.classList.add('d-none');
+            }, 5000);
+        }
+        
+        function setButtonLoading(buttonId, isLoading) {
+            const button = document.getElementById(buttonId);
+            const buttonText = document.getElementById(`${buttonId}-text`);
+            const buttonSpinner = document.getElementById(`${buttonId}-spinner`);
+            
+            if (isLoading) {
+                button.disabled = true;
+                buttonText.classList.add('d-none');
+                buttonSpinner.classList.remove('d-none');
+            } else {
+                button.disabled = false;
+                buttonText.classList.remove('d-none');
+                buttonSpinner.classList.add('d-none');
+            }
+        }
+        
+        async function loadUserProfile() {
+            try {
+                // First get basic info from localStorage
+                const user = getCurrentUser();
+                if (user) {
+                    document.getElementById('sidebar-user-name').textContent = user.name;
+                    document.getElementById('profile-name').textContent = user.name;
+                    document.getElementById('profile-email').textContent = user.email;
+                    document.getElementById('name').value = user.name;
+                    document.getElementById('email').value = user.email;
+                    
+                    // Also update sidebar
+                    document.getElementById('sidebar-user-name').textContent = user.name;
+                }
+                
+                // Now fetch complete profile from API
+                const response = await authenticatedFetch(`${API_URL}/user/profile`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load user profile');
+                }
+                
+                const profileData = await response.json();
+                
+                // Update UI with additional profile data
+                document.getElementById('phone').value = profileData.phone || '';
+                document.getElementById('profile-join-date').textContent = new Date(profileData.createdAt).toLocaleDateString();
+                
+                if (profileData.role) {
+                    document.getElementById('profile-role').textContent = profileData.role;
+                    document.getElementById('sidebar-user-role').textContent = profileData.role;
+                }
+                
+                if (profileData.avatar) {
+                    document.getElementById('profile-avatar').src = profileData.avatar;
+                    document.getElementById('sidebar-user-avatar').src = profileData.avatar;
+                }
+                
+                // Update activity data
+                document.getElementById('reports-count').textContent = profileData.reportsCount || 0;
+                document.getElementById('issues-count').textContent = profileData.issuesCount || 0;
+                document.getElementById('last-activity').textContent = profileData.lastActivity ? 
+                    new Date(profileData.lastActivity).toLocaleDateString() : 'Never';
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showError('Failed to load profile data. Please refresh the page.');
+            }
+        }
+        
+        function setupProfileForm() {
+            const profileForm = document.getElementById('profile-form');
+            
+            profileForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const name = document.getElementById('name').value;
+                const phone = document.getElementById('phone').value;
+                
+                try {
+                    setButtonLoading('update-profile-btn', true);
+                    
+                    const response = await authenticatedFetch(`${API_URL}/user/profile`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ name, phone })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to update profile');
+                    }
+                    
+                    // Update user in localStorage
+                    const user = getCurrentUser();
+                    user.name = name;
+                    localStorage.setItem('user', JSON.stringify(user));
+                    
+                    // Update UI
+                    document.getElementById('profile-name').textContent = name;
+                    document.getElementById('sidebar-user-name').textContent = name;
+                    
+                    showSuccess('Profile updated successfully');
+                    
+                } catch (error) {
+                    showError(error.message || 'Failed to update profile');
+                } finally {
+                    setButtonLoading('update-profile-btn', false);
+                }
+            });
+        }
+        
+        function setupPasswordForm() {
+            const passwordForm = document.getElementById('password-form');
+            
+            passwordForm.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const currentPassword = document.getElementById('current-password').value;
+                const newPassword = document.getElementById('new-password').value;
+                const confirmPassword = document.getElementById('confirm-password').value;
+                
+                if (newPassword !== confirmPassword) {
+                    showError('New passwords do not match');
+                    return;
+                }
+                
+                // Password validation
+                const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+                if (!passwordRegex.test(newPassword)) {
+                    showError('Password must be at least 8 characters with uppercase, lowercase, and number');
+                    return;
+                }
+                
+                try {
+                    setButtonLoading('update-password-btn', true);
+                    
+                    const response = await authenticatedFetch(`${API_URL}/user/change-password`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ currentPassword, newPassword })
+                    });
+                    
+                    const data = await response.json();
+                    
+                    if (!response.ok) {
+                        throw new Error(data.message || 'Failed to change password');
+                    }
+                    
+                    // Clear form
+                    passwordForm.reset();
+                    
+                    showSuccess('Password changed successfully');
+                    
+                } catch (error) {
+                    showError(error.message || 'Failed to change password');
+                } finally {
+                    setButtonLoading('update-password-btn', false);
+                }
+            });
+        }
+        
+        function setupDeleteAccount() {
+            const deleteConfirmInput = document.getElementById('delete-confirmation');
+            const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
+            
+            deleteConfirmInput.addEventListener('input', function() {
+                confirmDeleteBtn.disabled = this.value !== 'DELETE';
+            });
+            
+            confirmDeleteBtn.addEventListener('click', async function() {
+                try {
+                    const response = await authenticatedFetch(`${API_URL}/user/delete-account`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error('Failed to delete account');
+                    }
+                    
+                    // Logout user
+                    logout();
+                    
+                } catch (error) {
+                    showError(error.message || 'Failed to delete account');
+                    // Close modal
+                    bootstrap.Modal.getInstance(document.getElementById('deleteAccountModal')).hide();
+                }
+            });
+        }
+        
+        async function handleAvatarUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            const validTypes = ['image/jpeg', 'image/png', 'image/jpg'];
+            if (!validTypes.includes(file.type)) {
+                showError('Please select a valid image file (JPEG or PNG)');
+                return;
+            }
+            
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showError('Image file size should be less than 2MB');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('avatar', file);
+                
+                const token = getAuthToken();
+                
+                const response = await fetch(`${API_URL}/user/avatar`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to upload avatar');
+                }
+                
+                // Update avatar in UI
+                document.getElementById('profile-avatar').src = data.avatarUrl;
+                document.getElementById('sidebar-user-avatar').src = data.avatarUrl;
+                
+                showSuccess('Avatar updated successfully');
+                
+            } catch (error) {
+                showError(error.message || 'Failed to upload avatar');
+            }
+        }
+    </script>
+</body>
+</html>

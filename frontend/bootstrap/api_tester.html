@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STMS API Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1 {
+            color: #333;
+        }
+        .test-section {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .test-section h2 {
+            margin-top: 0;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .success {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .error {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .loading {
+            background-color: #d9edf7;
+            color: #31708f;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #image-preview {
+            max-width: 100%;
+            max-height: 300px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Smart Traffic Management System - API Test</h1>
+    
+    <div class="test-section">
+        <h2>Test Image Selection</h2>
+        <input type="file" id="image-input" accept="image/*">
+        <div>
+            <img id="image-preview" src="#" alt="Preview" style="display: none;">
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Object Detection</h2>
+        <button id="test-objects">Test Object Detection</button>
+        <div id="objects-result" class="result">Ready to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Pothole Detection</h2>
+        <button id="test-potholes">Test Pothole Detection</button>
+        <div id="potholes-result" class="result">Ready to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Weather Detection</h2>
+        <button id="test-weather">Test Weather Detection</button>
+        <div id="weather-result" class="result">Ready to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Traffic Sign Detection</h2>
+        <button id="test-traffic-signs">Test Traffic Sign Detection</button>
+        <div id="traffic-signs-result" class="result">Ready to test</div>
+    </div>
+
+    <div class="test-section">
+        <h2>Railway Crossing Detection</h2>
+        <button id="test-railway-crossing">Test Railway Crossing Detection</button>
+        <div id="railway-crossing-result" class="result">Ready to test</div>
+    </div>
+
+    <script>
+        // Base URL for API endpoints
+        const BASE_URL = ""; // Empty means relative to current host
+        
+        // Preview selected image
+        const imageInput = document.getElementById('image-input');
+        const imagePreview = document.getElementById('image-preview');
+        
+        imageInput.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.src = e.target.result;
+                    imagePreview.style.display = 'block';
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Function to test an endpoint
+        function testEndpoint(endpoint, resultElementId) {
+            const resultElement = document.getElementById(resultElementId);
+            const file = imageInput.files[0];
+            
+            if (!file) {
+                resultElement.textContent = "Error: Please select an image first";
+                resultElement.className = "result error";
+                return;
+            }
+            
+            // Show loading state
+            resultElement.textContent = "Testing...";
+            resultElement.className = "result loading";
+            
+            // Create form data
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // Make API request
+            fetch(`${BASE_URL}/api/detect/${endpoint}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Format JSON for display
+                const formattedData = JSON.stringify(data, null, 2);
+                resultElement.textContent = `Success! Response:\n${formattedData}`;
+                resultElement.className = "result success";
+            })
+            .catch(error => {
+                resultElement.textContent = `Error: ${error.message}`;
+                resultElement.className = "result error";
+            });
+        }
+
+        // Set up test buttons
+        document.getElementById('test-objects').addEventListener('click', () => {
+            testEndpoint('objects', 'objects-result');
+        });
+        
+        document.getElementById('test-potholes').addEventListener('click', () => {
+            testEndpoint('potholes', 'potholes-result');
+        });
+        
+        document.getElementById('test-weather').addEventListener('click', () => {
+            testEndpoint('weather', 'weather-result');
+        });
+        
+        document.getElementById('test-traffic-signs').addEventListener('click', () => {
+            testEndpoint('traffic_signs', 'traffic-signs-result');
+        });
+        
+        document.getElementById('test-railway-crossing').addEventListener('click', () => {
+            testEndpoint('railway_crossing', 'railway-crossing-result');
+        });
+    </script>
+</body>
+</html>

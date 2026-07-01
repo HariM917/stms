@@ -1,0 +1,56 @@
+"""
+Pydantic models for authentication endpoints.
+"""
+from pydantic import BaseModel, Field
+from typing import Optional
+
+
+class RegisterRequest(BaseModel):
+    """Registration request body."""
+    name: str = Field(..., min_length=1, max_length=100)
+    email: str = Field(..., min_length=5, max_length=255)
+    password: str = Field(..., min_length=6, max_length=128)
+
+
+class LoginRequest(BaseModel):
+    """Login request body."""
+    email: str = Field(..., min_length=5, max_length=255)
+    password: str = Field(..., min_length=1)
+
+
+class UserResponse(BaseModel):
+    """Public user data (never includes password)."""
+    id: str
+    name: str
+    email: str
+    role: str = "user"
+    phone: Optional[str] = None
+    avatar_url: Optional[str] = None
+    created_at: Optional[str] = None
+
+
+class AuthResponse(BaseModel):
+    """Response for login/register containing token and user."""
+    success: bool
+    message: str
+    token: Optional[str] = None
+    user: Optional[UserResponse] = None
+
+
+class TokenResponse(BaseModel):
+    """JWT token response."""
+    access_token: str
+    token_type: str = "bearer"
+    expires_in: int  # seconds
+
+
+class ProfileUpdateRequest(BaseModel):
+    """Request to update user profile."""
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    phone: Optional[str] = Field(None, max_length=20)
+
+
+class ChangePasswordRequest(BaseModel):
+    """Request to change password."""
+    current_password: str = Field(..., min_length=1)
+    new_password: str = Field(..., min_length=6, max_length=128)

@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Traffic Management System</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+    <style>
+        .sidebar {
+            min-height: 100vh;
+            background-color: #2c3e50;
+            color: white;
+            padding-top: 20px;
+        }
+        
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 10px 20px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        
+        .sidebar .nav-link:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        
+        .sidebar .nav-link.active {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .sidebar .nav-link i {
+            margin-right: 10px;
+        }
+        
+        .sidebar-header {
+            padding: 10px 20px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .content-header {
+            padding: 20px 0;
+            border-bottom: 1px solid #eaeaea;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            margin-bottom: 20px;
+            border: none;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .card-header {
+            background-color: white;
+            border-bottom: 1px solid #eaeaea;
+            font-weight: 600;
+        }
+        
+        .stats-card {
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-card h2 {
+            font-size: 2.5rem;
+            margin-bottom: 5px;
+        }
+        
+        .stats-card p {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 0;
+        }
+        
+        .bg-info-light {
+            background-color: rgba(52, 152, 219, 0.1);
+        }
+        
+        .bg-success-light {
+            background-color: rgba(46, 204, 113, 0.1);
+        }
+        
+        .bg-warning-light {
+            background-color: rgba(243, 156, 18, 0.1);
+        }
+        
+        .bg-danger-light {
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+        
+        .text-info-dark {
+            color: #2980b9;
+        }
+        
+        .text-success-dark {
+            color: #27ae60;
+        }
+        
+        .text-warning-dark {
+            color: #d35400;
+        }
+        
+        .text-danger-dark {
+            color: #c0392b;
+        }
+        
+        .user-profile {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: auto;
+        }
+        
+        .user-profile img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+        
+        .user-profile .user-info {
+            flex: 1;
+            overflow: hidden;
+        }
+        
+        .user-profile .user-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .user-profile .user-role {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+                <div class="sidebar-header">
+                    <h4>Smart Traffic Management</h4>
+                </div>
+                <div class="position-sticky">
+                    <ul class="nav flex-column">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="dashboard.html">
+                                <i class="fas fa-tachometer-alt"></i>
+                                Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-traffic-light"></i>
+                                Traffic Analysis
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-cloud-sun"></i>
+                                Weather Impact
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                Pothole Detection
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-sign"></i>
+                                Traffic Signs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-train"></i>
+                                Railway Crossings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#">
+                                <i class="fas fa-cog"></i>
+                                Settings
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="logout-link">
+                                <i class="fas fa-sign-out-alt"></i>
+                                Logout
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="user-profile mt-auto">
+                    <img src="https://via.placeholder.com/40" alt="User avatar" id="user-avatar">
+                    <div class="user-info">
+                        <p class="user-name" id="user-name">Loading...</p>
+                        <p class="user-role" id="user-role">User</p>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main content -->
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="content-header d-flex justify-content-between align-items-center">
+                    <h2>Dashboard</h2>
+                    <div>
+                        <span id="current-date"></span>
+                    </div>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="stats-card bg-info-light">
+                            <i class="fas fa-car fa-2x text-info-dark mb-3"></i>
+                            <h2 class="text-info-dark">1,254</h2>
+                            <p>Vehicles Detected Today</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-success-light">
+                            <i class="fas fa-exclamation-circle fa-2x text-success-dark mb-3"></i>
+                            <h2 class="text-success-dark">27</h2>
+                            <p>Potholes Reported</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-warning-light">
+                            <i class="fas fa-sign fa-2x text-warning-dark mb-3"></i>
+                            <h2 class="text-warning-dark">43</h2>
+                            <p>Traffic Signs Detected</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-danger-light">
+                            <i class="fas fa-train fa-2x text-danger-dark mb-3"></i>
+                            <h2 class="text-danger-dark">8</h2>
+                            <p>Railway Crossings Monitored</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Traffic Reports -->
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span>Recent Traffic Reports</span>
+                            <button class="btn btn-sm btn-outline-primary">View All</button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Location</th>
+                                        <th>Type</th>
+                                        <th>Time</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="traffic-reports">
+                                    <tr>
+                                        <td colspan="6" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Traffic Analysis -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Traffic Volume by Hour</div>
+                            <div class="card-body">
+                                <canvas id="trafficVolumeChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">Detection Distribution</div>
+                            <div class="card-body">
+                                <canvas id="detectionDistributionChart" height="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Authentication JS -->
+    <script src="js/auth.js"></script>
+    <!-- Dashboard JS -->
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check if user is authenticated
+            if (!isAuthenticated()) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // Setup logout functionality
+            document.getElementById('logout-link').addEventListener('click', function(e) {
+                e.preventDefault();
+                logout();
+            });
+            
+            // Set current date
+            const now = new Date();
+            document.getElementById('current-date').textContent = now.toLocaleDateString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            // Load user data
+            loadUserData();
+            
+            // Load traffic reports
+            loadTrafficReports();
+            
+            // Initialize charts
+            initializeCharts();
+        });
+        
+        function loadUserData() {
+            const user = getCurrentUser();
+            if (user) {
+                document.getElementById('user-name').textContent = user.name;
+                // You could set user avatar if available
+                // document.getElementById('user-avatar').src = user.avatar || 'default-avatar.png';
+            }
+        }
+        
+        async function loadTrafficReports() {
+            try {
+                const response = await authenticatedFetch(`${API_URL}/reports/recent`);
+                
+                if (!response.ok) {
+                    throw new Error('Failed to load traffic reports');
+                }
+                
+                const reports = await response.json();
+                renderTrafficReports(reports);
+            } catch (error) {
+                console.error('Error loading traffic reports:', error);
+                document.getElementById('traffic-reports').innerHTML = 
+                    `<tr><td colspan="6" class="text-center text-danger">Failed to load reports. ${error.message}</td></tr>`;
+            }
+        }
+        
+        function renderTrafficReports(reports) {
+            const tableBody = document.getElementById('traffic-reports');
+            
+            if (!reports || reports.length === 0) {
+                tableBody.innerHTML = '<tr><td colspan="6" class="text-center">No reports found</td></tr>';
+                return;
+            }
+            
+            tableBody.innerHTML = reports.map(report => `
+                <tr>
+                    <td>${report.id}</td>
+                    <td>${report.location}</td>
+                    <td>
+                        <span class="badge ${getTypeBadgeClass(report.type)}">${report.type}</span>
+                    </td>
+                    <td>${new Date(report.timestamp).toLocaleString()}</td>
+                    <td>
+                        <span class="badge ${getStatusBadgeClass(report.status)}">${report.status}</span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-info" onclick="viewReport(${report.id})">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        function getTypeBadgeClass(type) {
+            const typeClasses = {
+                'Pothole': 'bg-danger',
+                'Traffic Sign': 'bg-warning',
+                'Railway Crossing': 'bg-primary',
+                'Weather': 'bg-info'
+            };
+            return typeClasses[type] || 'bg-secondary';
+        }
+        
+        function getStatusBadgeClass(status) {
+            const statusClasses = {
+                'New': 'bg-info',
+                'In Progress': 'bg-warning',
+                'Resolved': 'bg-success',
+                'Ignored': 'bg-secondary'
+            };
+            return statusClasses[status] || 'bg-secondary';
+        }
+        
+        function viewReport(id) {
+            console.log('Viewing report:', id);
+            // Implementation for viewing report details
+        }
+        
+        function initializeCharts() {
+            // Traffic Volume Chart
+            const trafficCtx = document.getElementById('trafficVolumeChart').getContext('2d');
+            new Chart(trafficCtx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    datasets: [{
+                        label: 'Traffic Volume',
+                        data: [120, 90, 70, 60, 50, 80, 120, 180, 210, 190, 170, 180, 190, 180, 170, 190, 210, 230, 200, 170, 150, 140, 130, 110],
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: {
+                                display: true,
+                                color: 'rgba(0, 0, 0, 0.05)'
+                            }
+                        },
+                        x: {
+                            grid: {
+                                display: false
+                            }
+                        }
+                    }
+                }
+            });
+            
+            // Detection Distribution Chart
+            const detectionCtx = document.getElementById('detectionDistributionChart').getContext('2d');
+            new Chart(detectionCtx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Vehicles', 'Potholes', 'Traffic Signs', 'Railway Crossings'],
+                    datasets: [{
+                        data: [65, 15, 12, 8],
+                        backgroundColor: ['#3498db', '#e74c3c', '#f39c12', '#8e44ad']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right'
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>

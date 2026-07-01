@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register — Smart Traffic Management System | Government of India</title>
+    <meta name="description" content="Create an account on the STMS portal.">
+    <link rel="stylesheet" href="css/govt.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="auth-page">
+    <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+    <div class="tricolor-banner">
+        <div class="tricolor-saffron"></div>
+        <div class="tricolor-white"></div>
+        <div class="tricolor-green"></div>
+    </div>
+
+    <header class="govt-header">
+        <div class="govt-header-inner">
+            <div class="govt-emblem-section">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+                     alt="National Emblem of India" class="govt-emblem">
+                <div class="govt-titles">
+                    <span class="dept-name">Ministry of Road Transport & Highways</span>
+                    <span class="portal-name">Smart Traffic Management System</span>
+                    <span class="portal-subtitle">AI-Powered Traffic Intelligence Portal</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main id="main-content" style="flex:1; display:flex; align-items:center; justify-content:center; padding: 40px 20px;">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <div style="margin-bottom:8px;">
+                    <i class="fas fa-user-plus" style="font-size:28px; color:var(--saffron);"></i>
+                </div>
+                <h2>New User Registration</h2>
+                <p>Create your STMS Portal account</p>
+            </div>
+            <div class="auth-card-body">
+                <div id="error-message" class="govt-alert govt-alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> <span></span>
+                </div>
+                <div id="success-message" class="govt-alert govt-alert-success">
+                    <i class="fas fa-check-circle"></i> <span></span>
+                </div>
+
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="name">Full Name <span class="required">*</span></label>
+                        <input type="text" class="form-input" id="name" placeholder="Enter your full name" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <input type="email" class="form-input" id="email" placeholder="Enter email address" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password <span class="required">*</span></label>
+                        <input type="password" class="form-input" id="password" placeholder="Minimum 6 characters" required minlength="6">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm Password <span class="required">*</span></label>
+                        <input type="password" class="form-input" id="confirm-password" placeholder="Re-enter your password" required>
+                    </div>
+
+                    <button type="submit" class="btn-govt btn-govt-primary" id="register-btn" style="width:100%; justify-content:center;">
+                        <span id="register-text"><i class="fas fa-user-plus"></i> Create Account</span>
+                        <span id="register-spinner" class="spinner" style="display:none;"></span>
+                    </button>
+                </form>
+
+                <div style="text-align:center; margin-top:16px; font-size:13px;">
+                    <p style="color:var(--text-muted);">Already have an account? <a href="govt-login.html">Sign In</a></p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="govt-footer">
+        <div class="govt-footer-bottom">
+            <div class="footer-bottom-inner">
+                <span>© 2026 Smart Traffic Management System | Government of India</span>
+                <span>Designed & Developed by National Informatics Centre (NIC)</span>
+            </div>
+        </div>
+    </footer>
+
+    <div class="tricolor-banner">
+        <div class="tricolor-saffron"></div>
+        <div class="tricolor-white"></div>
+        <div class="tricolor-green"></div>
+    </div>
+
+    <script src="js/govt-auth.js"></script>
+    <script>
+        if (isAuthenticated()) window.location.href = 'govt-dashboard.html';
+
+        document.getElementById('register-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const confirm = document.getElementById('confirm-password').value;
+            const errorEl = document.getElementById('error-message');
+            const successEl = document.getElementById('success-message');
+            const btn = document.getElementById('register-btn');
+            const btnText = document.getElementById('register-text');
+            const btnSpinner = document.getElementById('register-spinner');
+
+            errorEl.classList.remove('show');
+            successEl.classList.remove('show');
+
+            if (password !== confirm) {
+                errorEl.querySelector('span').textContent = 'Passwords do not match';
+                errorEl.classList.add('show');
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'inline-block';
+
+            try {
+                await register(name, email, password);
+                successEl.querySelector('span').textContent = 'Registration successful! Redirecting to login...';
+                successEl.classList.add('show');
+                setTimeout(() => window.location.href = 'govt-login.html', 2000);
+            } catch (err) {
+                errorEl.querySelector('span').textContent = err.message;
+                errorEl.classList.add('show');
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'inline-flex';
+                btnSpinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detection Results - STMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .result-container {
+            text-align: center;
+        }
+        .result-image {
+            max-width: 100%;
+            height: auto;
+            margin: 1rem 0;
+            border: 1px solid #ddd;
+        }
+        .detection-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+        .detection-item:nth-child(odd) {
+            background-color: #f9f9f9;
+        }
+        .detection-label {
+            font-weight: bold;
+        }
+        .detection-confidence {
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Smart Traffic Management System</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Detection Results</h2>
+            <div class="result-container">
+                <img src="data:image/jpeg;base64,{{ image_b64 }}" alt="Detection Result" class="result-image">
+            </div>
+            
+            <h3>Detected Objects ({{ detections|length }})</h3>
+            <div class="detections-list">
+                {% for detection in detections %}
+                <div class="detection-item">
+                    <span class="detection-label">{{ detection.label }}</span>
+                    <span class="detection-confidence">{{ "%.2f"|format(detection.confidence*100) }}%</span>
+                </div>
+                {% endfor %}
+                
+                {% if not detections %}
+                <p>No objects detected.</p>
+                {% endif %}
+            </div>
+            
+            <div style="margin-top: 1.5rem; text-align: center;">
+                <a href="{{ url_for('index') }}" style="text-decoration: none;">
+                    <button type="button">Analyze Another Image</button>
+                </a>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Smart Traffic Management System</p>
+    </footer>
+</body>
+</html>

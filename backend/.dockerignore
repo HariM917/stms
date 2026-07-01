@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.venv/
+venv/
+ENV/
+
+# Node.js (deprecated)
+node_modules/
+npm-debug.log*
+package-lock.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Git
+.git/
+.gitignore
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+tests/
+
+# Docs
+*.md
+docs/
+*.ipynb
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Database files (mounted as volumes)
+*.db
+*.sqlite3
+
+# Model weights (large — mount at runtime)
+# Uncomment the next line if you mount models instead of baking them in
+# *.pt
+
+# Misc
+.DS_Store
+Thumbs.db
+_deprecated/
+scratch/
+snapshots/
+traffic_sign_frames/

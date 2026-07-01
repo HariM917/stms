@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic Management System - System Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+        .card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .card h2 {
+            margin-top: 0;
+            color: #444;
+        }
+        .test-group {
+            margin-bottom: 30px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            border-left: 4px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+            background-color: #f9f9f9;
+            min-height: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #D8000C;
+            background-color: #FFD2D2;
+        }
+        .success {
+            color: #4F8A10;
+            background-color: #DFF2BF;
+        }
+        .warning {
+            color: #9F6000;
+            background-color: #FEEFB3;
+        }
+        .flex-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .flex-column {
+            flex: 1;
+            min-width: 300px;
+        }
+        pre {
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 5px;
+        }
+        .status-dot.online {
+            background-color: #4CAF50;
+        }
+        .status-dot.offline {
+            background-color: #D8000C;
+        }
+        .status-dot.unknown {
+            background-color: #9F6000;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Smart Traffic Management System - System Test</h1>
+        
+        <div class="test-group">
+            <h2>Server Status</h2>
+            <div class="flex-row">
+                <div class="card flex-column">
+                    <h2>Auth Server</h2>
+                    <p>
+                        <span class="status-dot unknown" id="auth-server-status"></span>
+                        <span id="auth-server-status-text">Checking...</span>
+                    </p>
+                    <button onclick="checkAuthServer()">Check Status</button>
+                    <div id="auth-server-result" class="result"></div>
+                </div>
+                
+                <div class="card flex-column">
+                    <h2>API Server</h2>
+                    <p>
+                        <span class="status-dot unknown" id="api-server-status"></span>
+                        <span id="api-server-status-text">Checking...</span>
+                    </p>
+                    <button onclick="checkApiServer()">Check Status</button>
+                    <div id="api-server-result" class="result"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-group">
+            <h2>Authentication Tests</h2>
+            <div class="flex-row">
+                <div class="card flex-column">
+                    <h2>Register Test</h2>
+                    <p>Creates a test user account</p>
+                    <button onclick="testRegistration()">Test Register</button>
+                    <div id="register-result" class="result"></div>
+                </div>
+                
+                <div class="card flex-column">
+                    <h2>Login Test</h2>
+                    <p>Tests login with test credentials</p>
+                    <button onclick="testLogin()">Test Login</button>
+                    <div id="login-result" class="result"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-group">
+            <h2>API Tests</h2>
+            <div class="flex-row">
+                <div class="card flex-column">
+                    <h2>Object Detection</h2>
+                    <p>Tests object detection endpoint</p>
+                    <button onclick="testObjectDetection()">Test Object Detection</button>
+                    <div id="object-detection-result" class="result"></div>
+                </div>
+                
+                <div class="card flex-column">
+                    <h2>Traffic Sign Detection</h2>
+                    <p>Tests traffic sign detection endpoint</p>
+                    <button onclick="testTrafficSignDetection()">Test Sign Detection</button>
+                    <div id="traffic-sign-result" class="result"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-group">
+            <h2>Integration Test</h2>
+            <div class="flex-row">
+                <div class="card flex-column">
+                    <h2>End-to-End Test</h2>
+                    <p>Performs complete workflow test</p>
+                    <button onclick="testEndToEnd()">Run E2E Test</button>
+                    <div id="e2e-result" class="result"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Configuration
+        const AUTH_SERVER_URL = 'http://localhost:3000';
+        const API_SERVER_URL = 'http://localhost:8001';
+        const FRONTEND_URL = 'http://localhost:5000';
+        
+        // Store authentication token
+        let authToken = '';
+        
+        // Helper functions
+        function updateStatus(elementId, status, message) {
+            const statusDot = document.getElementById(elementId);
+            const statusText = document.getElementById(elementId + '-text');
+            
+            if (status === 'online') {
+                statusDot.className = 'status-dot online';
+                statusText.textContent = 'Online';
+            } else if (status === 'offline') {
+                statusDot.className = 'status-dot offline';
+                statusText.textContent = 'Offline';
+            } else {
+                statusDot.className = 'status-dot unknown';
+                statusText.textContent = 'Unknown';
+            }
+            
+            if (message) {
+                const resultElement = document.getElementById(elementId.replace('-status', '-result'));
+                resultElement.innerHTML = message;
+                
+                if (status === 'online') {
+                    resultElement.classList.add('success');
+                    resultElement.classList.remove('error', 'warning');
+                } else if (status === 'offline') {
+                    resultElement.classList.add('error');
+                    resultElement.classList.remove('success', 'warning');
+                } else {
+                    resultElement.classList.add('warning');
+                    resultElement.classList.remove('success', 'error');
+                }
+            }
+        }
+        
+        function showResult(elementId, success, message) {
+            const resultElement = document.getElementById(elementId);
+            resultElement.innerHTML = message;
+            
+            if (success) {
+                resultElement.classList.add('success');
+                resultElement.classList.remove('error', 'warning');
+            } else {
+                resultElement.classList.add('error');
+                resultElement.classList.remove('success', 'warning');
+            }
+        }
+        
+        // Server status checks
+        async function checkAuthServer() {
+            const resultElement = document.getElementById('auth-server-result');
+            resultElement.innerHTML = 'Checking auth server...';
+            
+            try {
+                const response = await fetch(`${AUTH_SERVER_URL}/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('auth-server-status', 'online', `Auth server is running<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`);
+                } else {
+                    updateStatus('auth-server-status', 'offline', `Auth server responded with status: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                updateStatus('auth-server-status', 'offline', `Error connecting to auth server: ${error.message}`);
+            }
+        }
+        
+        async function checkApiServer() {
+            const resultElement = document.getElementById('api-server-result');
+            resultElement.innerHTML = 'Checking API server...';
+            
+            try {
+                const response = await fetch(`${API_SERVER_URL}/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('api-server-status', 'online', `API server is running<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`);
+                } else {
+                    updateStatus('api-server-status', 'offline', `API server responded with status: ${response.status} ${response.statusText}`);
+                }
+            } catch (error) {
+                updateStatus('api-server-status', 'offline', `Error connecting to API server: ${error.message}`);
+            }
+        }
+        
+        // Authentication tests
+        async function testRegistration() {
+            const resultElement = document.getElementById('register-result');
+            resultElement.innerHTML = 'Testing registration...';
+            
+            const testUser = {
+                name: 'Test User',
+                email: `test${Date.now()}@example.com`,
+                password: 'Test123!'
+            };
+            
+            try {
+                const response = await fetch(`${AUTH_SERVER_URL}/api/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testUser)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    showResult(
+                        'register-result', 
+                        true, 
+                        `Registration successful<br>Email: ${testUser.email}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                    );
+                } else {
+                    showResult(
+                        'register-result', 
+                        false, 
+                        `Registration failed: ${data.error || data.message || response.statusText}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                    );
+                }
+            } catch (error) {
+                showResult('register-result', false, `Error during registration: ${error.message}`);
+            }
+        }
+        
+        async function testLogin() {
+            const resultElement = document.getElementById('login-result');
+            resultElement.innerHTML = 'Testing login...';
+            
+            const testUser = {
+                email: 'test@example.com',
+                password: 'Test123!'
+            };
+            
+            try {
+                const response = await fetch(`${AUTH_SERVER_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testUser)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    showResult(
+                        'login-result', 
+                        true, 
+                        `Login successful<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                    );
+                } else {
+                    showResult(
+                        'login-result', 
+                        false, 
+                        `Login failed: ${data.error || data.message || response.statusText}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                    );
+                }
+            } catch (error) {
+                showResult('login-result', false, `Error during login: ${error.message}`);
+            }
+        }
+        
+        // API tests
+        async function testObjectDetection() {
+            const resultElement = document.getElementById('object-detection-result');
+            resultElement.innerHTML = 'Testing object detection...';
+            
+            if (!authToken) {
+                showResult('object-detection-result', false, 'Authentication token required. Please login first.');
+                return;
+            }
+            
+            // Create a simple canvas with some shapes to simulate an image
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#87CEEB'; // sky blue
+            ctx.fillRect(0, 0, 640, 480);
+            ctx.fillStyle = '#8B4513'; // brown
+            ctx.fillRect(0, 380, 640, 100); // ground
+            ctx.fillStyle = '#A9A9A9'; // dark gray
+            ctx.fillRect(100, 280, 200, 100); // car body
+            ctx.fillStyle = '#696969'; // dim gray
+            ctx.fillRect(150, 330, 40, 40); // wheel
+            ctx.fillRect(250, 330, 40, 40); // wheel
+            
+            try {
+                // Convert canvas to blob
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                const formData = new FormData();
+                formData.append('file', blob, 'test_image.jpg');
+                
+                const response = await fetch(`${API_SERVER_URL}/detect/objects`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(
+                        'object-detection-result', 
+                        true, 
+                        `Object detection successful<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                    );
+                } else {
+                    showResult(
+                        'object-detection-result', 
+                        false, 
+                        `Object detection failed: ${data.error || data.message || response.statusText}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                    );
+                }
+            } catch (error) {
+                showResult('object-detection-result', false, `Error during object detection: ${error.message}`);
+            }
+        }
+        
+        async function testTrafficSignDetection() {
+            const resultElement = document.getElementById('traffic-sign-result');
+            resultElement.innerHTML = 'Testing traffic sign detection...';
+            
+            if (!authToken) {
+                showResult('traffic-sign-result', false, 'Authentication token required. Please login first.');
+                return;
+            }
+            
+            // Create a simple canvas with a traffic sign shape
+            const canvas = document.createElement('canvas');
+            canvas.width = 640;
+            canvas.height = 480;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#87CEEB'; // sky blue
+            ctx.fillRect(0, 0, 640, 480);
+            
+            // Draw a red triangle (warning sign)
+            ctx.beginPath();
+            ctx.moveTo(320, 100);
+            ctx.lineTo(220, 280);
+            ctx.lineTo(420, 280);
+            ctx.closePath();
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.strokeStyle = 'white';
+            ctx.lineWidth = 5;
+            ctx.stroke();
+            
+            // Draw exclamation mark
+            ctx.fillStyle = 'black';
+            ctx.font = '80px Arial';
+            ctx.fillText('!', 310, 250);
+            
+            try {
+                // Convert canvas to blob
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                const formData = new FormData();
+                formData.append('file', blob, 'traffic_sign.jpg');
+                
+                const response = await fetch(`${API_SERVER_URL}/detect/traffic-signs`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResult(
+                        'traffic-sign-result', 
+                        true, 
+                        `Traffic sign detection successful<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                    );
+                } else {
+                    showResult(
+                        'traffic-sign-result', 
+                        false, 
+                        `Traffic sign detection failed: ${data.error || data.message || response.statusText}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                    );
+                }
+            } catch (error) {
+                showResult('traffic-sign-result', false, `Error during traffic sign detection: ${error.message}`);
+            }
+        }
+        
+        // End-to-end test
+        async function testEndToEnd() {
+            const resultElement = document.getElementById('e2e-result');
+            resultElement.innerHTML = 'Running end-to-end test...';
+            
+            let results = '';
+            let allPassed = true;
+            
+            // Step 1: Check servers
+            results += '<strong>Step 1: Checking servers</strong><br>';
+            
+            try {
+                const authResponse = await fetch(`${AUTH_SERVER_URL}/`);
+                results += authResponse.ok ? '✅ Auth server is online<br>' : '❌ Auth server is offline<br>';
+                allPassed = allPassed && authResponse.ok;
+                
+                const apiResponse = await fetch(`${API_SERVER_URL}/`);
+                results += apiResponse.ok ? '✅ API server is online<br>' : '❌ API server is offline<br>';
+                allPassed = allPassed && apiResponse.ok;
+                
+                // Step 2: Register a test user
+                results += '<br><strong>Step 2: Registering test user</strong><br>';
+                
+                const testUser = {
+                    name: 'E2E Test User',
+                    email: `e2e_test_${Date.now()}@example.com`,
+                    password: 'E2ETest123!'
+                };
+                
+                const registerResponse = await fetch(`${AUTH_SERVER_URL}/api/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(testUser)
+                });
+                
+                const registerData = await registerResponse.json();
+                
+                if (registerResponse.ok && registerData.token) {
+                    results += `✅ Registration successful (${testUser.email})<br>`;
+                    authToken = registerData.token;
+                } else {
+                    results += `❌ Registration failed: ${registerData.error || registerData.message || registerResponse.statusText}<br>`;
+                    allPassed = false;
+                }
+                
+                // Step 3: Make an authenticated API call
+                if (authToken) {
+                    results += '<br><strong>Step 3: Making authenticated API call</strong><br>';
+                    
+                    // Create a simple test image
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 320;
+                    canvas.height = 240;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = 'lightgray';
+                    ctx.fillRect(0, 0, 320, 240);
+                    ctx.fillStyle = 'black';
+                    ctx.fillRect(100, 100, 120, 80);
+                    
+                    // Convert canvas to blob
+                    const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg'));
+                    const formData = new FormData();
+                    formData.append('file', blob, 'e2e_test.jpg');
+                    
+                    const apiCallResponse = await fetch(`${API_SERVER_URL}/detect/objects`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        },
+                        body: formData
+                    });
+                    
+                    if (apiCallResponse.ok) {
+                        const apiData = await apiCallResponse.json();
+                        results += `✅ API call successful: Detected ${apiData.objects?.length || 0} objects<br>`;
+                    } else {
+                        const errorData = await apiCallResponse.json();
+                        results += `❌ API call failed: ${errorData.error || errorData.message || apiCallResponse.statusText}<br>`;
+                        allPassed = false;
+                    }
+                }
+                
+                // Final result
+                results += '<br><strong>Test Summary</strong><br>';
+                results += allPassed ? 
+                    '✅ All tests passed! The system is properly integrated.' : 
+                    '❌ Some tests failed. Please check the details above.';
+                
+                showResult('e2e-result', allPassed, results);
+                
+            } catch (error) {
+                showResult('e2e-result', false, `Error during end-to-end test: ${error.message}<br>${results}`);
+            }
+        }
+        
+        // Run initial checks when the page loads
+        window.addEventListener('load', () => {
+            checkAuthServer();
+            checkApiServer();
+        });
+    </script>
+</body>
+</html>

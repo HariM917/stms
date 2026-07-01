@@ -1,0 +1,102 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Traffic Management System</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Smart Traffic Management System</h1>
+            <nav>
+                <ul>
+                    <li><a href="/" class="active">Dashboard</a></li>
+                    <li><a href="/analytics">Analytics</a></li>
+                    <li><a href="/users">Users</a></li>
+                    <li><a href="/settings">Settings</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        <div class="dashboard-grid">
+            <section class="card">
+                <h2>Traffic Detection</h2>
+                <div class="upload-container">
+                    <p>Upload traffic image for analysis</p>
+                    <form id="trafficForm" enctype="multipart/form-data">
+                        <input type="file" id="trafficImage" accept="image/*">
+                        <button type="button" id="analyzeTraffic">Analyze</button>
+                    </form>
+                </div>
+                <div id="trafficResults" class="results">
+                    <p>Results will appear here</p>
+                </div>
+            </section>
+            
+            <section class="card">
+                <h2>Road Condition</h2>
+                <div class="upload-container">
+                    <p>Upload road image to detect potholes</p>
+                    <form id="roadForm" enctype="multipart/form-data">
+                        <input type="file" id="roadImage" accept="image/*">
+                        <button type="button" id="analyzeRoad">Analyze</button>
+                    </form>
+                </div>
+                <div id="roadResults" class="results">
+                    <p>Results will appear here</p>
+                </div>
+            </section>
+            
+            <section class="card">
+                <h2>Traffic Signs</h2>
+                <div class="upload-container">
+                    <p>Upload image to detect traffic signs</p>
+                    <form id="signsForm" enctype="multipart/form-data">
+                        <input type="file" id="signImage" accept="image/*">
+                        <button type="button" id="analyzeSigns">Analyze</button>
+                    </form>
+                </div>
+                <div id="signResults" class="results">
+                    <p>Results will appear here</p>
+                </div>
+            </section>
+            
+            <section class="card">
+                <h2>Weather Impact</h2>
+                <div class="upload-container">
+                    <p>Upload image or enter location</p>
+                    <form id="weatherForm">
+                        <input type="file" id="weatherImage" accept="image/*">
+                        <input type="text" id="location" placeholder="Or enter location">
+                        <button type="button" id="analyzeWeather">Analyze</button>
+                    </form>
+                </div>
+                <div id="weatherResults" class="results">
+                    <p>Results will appear here</p>
+                </div>
+            </section>
+        </div>
+        
+        <div class="insights-section">
+            <h2>AI Traffic Insights</h2>
+            <div class="card">
+                <div id="insightsContent">
+                    <p>Upload traffic data to generate AI insights</p>
+                </div>
+                <button id="generateInsights">Generate Insights</button>
+            </div>
+        </div>
+    </main>
+    
+    <footer>
+        <p>&copy; 2025 Smart Traffic Management System</p>
+    </footer>
+    
+    <script src="/static/js/main.js"></script>
+</body>
+</html>

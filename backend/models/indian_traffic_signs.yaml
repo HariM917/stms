@@ -1,0 +1,22 @@
+# Indian Traffic Signs Dataset configuration for YOLOv8
+
+# Path to dataset root directory
+path: C:/Users/Lenovo/Documents/GitHub/stms-backend/traffic_sign_frames
+
+# Train/val/test splits
+# Note: If dataset doesn't have predefined splits, we'll create them during training
+train: images
+val: images
+test: images
+
+# Classes
+names:
+  0: hump
+  1: pedestrian_crossing
+  2: stop
+  3: speed_limit_20
+  4: speed_limit_30
+  5: speed_limit_40
+  6: speed_limit_50
+  7: no_entry
+  8: no_parking

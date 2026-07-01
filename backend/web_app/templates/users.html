@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Users - STMS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .users-container {
+            margin-top: 1rem;
+        }
+        .user-card {
+            background: #fff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .user-card h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .user-card p {
+            margin: 0.5rem 0;
+            color: #666;
+        }
+        .user-role {
+            display: inline-block;
+            background: #e3f2fd;
+            padding: 0.2rem 0.6rem;
+            border-radius: 15px;
+            font-size: 0.8rem;
+        }
+        .user-role.admin {
+            background: #ede7f6;
+            color: #5e35b1;
+        }
+        .user-role.operator {
+            background: #e8f5e9;
+            color: #2e7d32;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 2rem;
+        }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Smart Traffic Management System</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Users Management</h2>
+            <p>This page displays users retrieved from the API.</p>
+            
+            <div id="users-container" class="users-container">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Loading users...</p>
+                </div>
+            </div>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2025 Smart Traffic Management System</p>
+    </footer>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const usersContainer = document.getElementById('users-container');
+            
+            // Fetch users from API
+            fetch('http://localhost:8001/api/users')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success && data.users) {
+                        displayUsers(data.users);
+                    } else {
+                        showError('Invalid data structure from API');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching users:', error);
+                    showError(`Failed to load users: ${error.message}`);
+                });
+            
+            function displayUsers(users) {
+                usersContainer.innerHTML = '';
+                
+                if (users.length === 0) {
+                    usersContainer.innerHTML = '<p>No users found.</p>';
+                    return;
+                }
+                
+                users.forEach(user => {
+                    const userCard = document.createElement('div');
+                    userCard.className = 'user-card';
+                    
+                    let roleClass = 'user-role';
+                    if (user.role === 'admin') roleClass += ' admin';
+                    if (user.role === 'operator') roleClass += ' operator';
+                    
+                    userCard.innerHTML = `
+                        <h3>${user.name}</h3>
+                        <p>ID: ${user.id}</p>
+                        <p>Email: ${user.email}</p>
+                        <p>Role: <span class="${roleClass}">${user.role || 'user'}</span></p>
+                    `;
+                    
+                    usersContainer.appendChild(userCard);
+                });
+            }
+            
+            function showError(message) {
+                usersContainer.innerHTML = `
+                    <div class="error">
+                        <p>Warning: ${message}</p>
+                        <button onclick="location.reload()">Retry</button>
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

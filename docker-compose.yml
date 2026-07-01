@@ -1,0 +1,60 @@
+# ==============================================================================
+# STMS — Docker Compose (Development)
+# ==============================================================================
+# Start:  docker-compose up --build
+# Stop:   docker-compose down
+# Reset:  docker-compose down -v  (removes database data)
+# ==============================================================================
+
+services:
+  # ---- PostgreSQL Database ----
+  db:
+    image: postgres:16-alpine
+    container_name: stms-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_DB: ${DB_DATABASE:-stms_db}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- STMS API Server ----
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: stms-api
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8001}:8001"
+    environment:
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - DB_DRIVER=postgresql
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_DATABASE=${DB_DATABASE:-stms_db}
+      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - API_PORT=8001
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5000,http://localhost:3000}
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/ai_models:/app/ai_models:ro
+      - ./backend/snapshots:/app/snapshots
+      - ./backend/logs:/app/logs
+
+volumes:
+  pgdata:
+    driver: local

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Detection — Smart Traffic Management System | Government of India</title>
+    <meta name="description" content="Upload images for AI-powered traffic detection — vehicles, potholes, signs, weather, and railway crossings.">
+    <link rel="stylesheet" href="css/govt.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+    <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+    <!-- Tricolor -->
+    <div class="tricolor-banner">
+        <div class="tricolor-saffron"></div>
+        <div class="tricolor-white"></div>
+        <div class="tricolor-green"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="govt-header">
+        <div class="govt-header-inner">
+            <div class="govt-emblem-section">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+                     alt="National Emblem of India" class="govt-emblem">
+                <div class="govt-titles">
+                    <span class="dept-name">Ministry of Road Transport & Highways</span>
+                    <span class="portal-name">Smart Traffic Management System</span>
+                    <span class="portal-subtitle">AI-Powered Traffic Intelligence Portal</span>
+                </div>
+            </div>
+            <div class="govt-header-right">
+                <div class="font-size-controls">
+                    <button onclick="document.body.style.fontSize='13px'">A<sup>-</sup></button>
+                    <button onclick="document.body.style.fontSize='14px'">A</button>
+                    <button onclick="document.body.style.fontSize='16px'">A<sup>+</sup></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Nav -->
+    <nav class="govt-navbar">
+        <div class="govt-navbar-inner">
+            <ul class="govt-nav">
+                <li><a href="govt-dashboard.html"><i class="fas fa-tachometer-alt"></i> Dashboard</a></li>
+                <li><a href="govt-detection.html" class="active"><i class="fas fa-camera"></i> Detection</a></li>
+                <li><a href="#"><i class="fas fa-traffic-light"></i> Signals</a></li>
+                <li><a href="#"><i class="fas fa-file-alt"></i> Reports</a></li>
+                <li><a href="#"><i class="fas fa-chart-bar"></i> Analytics</a></li>
+            </ul>
+            <div class="navbar-user">
+                <i class="fas fa-user-circle" style="font-size:20px;"></i>
+                <span id="nav-user-name" class="user-name">Officer</span>
+                <button class="btn-logout" onclick="logout()"><i class="fas fa-sign-out-alt"></i> Logout</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="breadcrumb-bar">
+        <div class="breadcrumb-inner">
+            <a href="govt-dashboard.html">Home</a> <span class="sep">›</span> <strong>AI Detection Module</strong>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main id="main-content">
+        <div class="page-container">
+            <h1 class="page-title"><i class="fas fa-search-location"></i> AI-Powered Detection Module</h1>
+
+            <!-- Detection Type Selector -->
+            <div class="govt-card">
+                <div class="govt-card-header">
+                    <i class="fas fa-sliders-h"></i> Select Detection Type
+                </div>
+                <div class="govt-card-body">
+                    <div style="display:flex; flex-wrap:wrap; gap:10px;">
+                        <button class="btn-govt btn-govt-primary det-type-btn active" data-type="objects" data-endpoint="/api/v1/detect/objects">
+                            <i class="fas fa-car"></i> Object Detection
+                        </button>
+                        <button class="btn-govt btn-govt-outline det-type-btn" data-type="potholes" data-endpoint="/api/v1/detect/potholes">
+                            <i class="fas fa-road"></i> Pothole Detection
+                        </button>
+                        <button class="btn-govt btn-govt-outline det-type-btn" data-type="traffic-signs" data-endpoint="/api/v1/detect/traffic-signs">
+                            <i class="fas fa-sign-hanging"></i> Traffic Signs
+                        </button>
+                        <button class="btn-govt btn-govt-outline det-type-btn" data-type="weather" data-endpoint="/api/v1/detect/weather">
+                            <i class="fas fa-cloud-sun"></i> Weather
+                        </button>
+                        <button class="btn-govt btn-govt-outline det-type-btn" data-type="railway" data-endpoint="/api/v1/detect/railway-crossing">
+                            <i class="fas fa-train"></i> Railway Crossing
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid-2">
+                <!-- Upload -->
+                <div class="govt-card">
+                    <div class="govt-card-header">
+                        <i class="fas fa-upload"></i> Upload Image for Analysis
+                    </div>
+                    <div class="govt-card-body">
+                        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
+                            <i class="fas fa-cloud-arrow-up"></i>
+                            <p><strong>Click to upload</strong> or drag & drop an image file</p>
+                            <p style="font-size:11px; color:#999;">Supported formats: JPEG, PNG, WebP (Max 5MB)</p>
+                            <input type="file" id="file-input" accept="image/jpeg,image/png,image/webp" style="display:none;">
+                        </div>
+
+                        <!-- Image Preview -->
+                        <div id="image-preview" style="display:none; margin-top:16px; text-align:center;">
+                            <img id="preview-img" style="max-width:100%; max-height:300px; border:1px solid var(--border-color); border-radius:4px;" alt="Uploaded image preview">
+                            <p style="margin-top:8px; font-size:12px; color:var(--text-muted);" id="file-info"></p>
+                        </div>
+
+                        <button class="btn-govt btn-govt-saffron" id="analyze-btn" style="width:100%; justify-content:center; margin-top:16px;" disabled>
+                            <span id="analyze-text"><i class="fas fa-microscope"></i> Analyze Image</span>
+                            <span id="analyze-spinner" class="spinner" style="display:none;"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div class="govt-card">
+                    <div class="govt-card-header">
+                        <i class="fas fa-poll"></i> Detection Results
+                    </div>
+                    <div class="govt-card-body">
+                        <div id="results-placeholder" style="text-align:center; padding:40px 20px; color:var(--text-muted);">
+                            <i class="fas fa-microscope" style="font-size:36px; margin-bottom:12px; display:block; opacity:0.3;"></i>
+                            <p>Upload an image and click <strong>Analyze</strong> to see detection results.</p>
+                        </div>
+
+                        <!-- Visualization -->
+                        <div id="results-content" style="display:none;">
+                            <div class="detection-image-wrapper">
+                                <img id="result-visualization" alt="Detection visualization" style="max-width:100%; border:1px solid var(--border-color); border-radius:4px;">
+                            </div>
+
+                            <!-- Summary Stats -->
+                            <div id="result-summary" style="margin:12px 0;"></div>
+
+                            <!-- Detections Table -->
+                            <table class="govt-table" id="detections-table" style="display:none;">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Class</th>
+                                        <th>Confidence</th>
+                                        <th>Bounding Box</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detections-tbody"></tbody>
+                            </table>
+
+                            <!-- Weather result -->
+                            <div id="weather-result" style="display:none;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="govt-footer">
+        <div class="govt-footer-bottom">
+            <div class="footer-bottom-inner">
+                <span>© 2026 Smart Traffic Management System | Government of India</span>
+                <span>Designed & Developed by NIC</span>
+            </div>
+        </div>
+    </footer>
+
+    <div class="tricolor-banner">
+        <div class="tricolor-saffron"></div>
+        <div class="tricolor-white"></div>
+        <div class="tricolor-green"></div>
+    </div>
+
+    <script src="js/govt-auth.js"></script>
+    <script>
+        if (!requireAuth()) throw new Error('redirect');
+        displayNavUser();
+
+        let selectedFile = null;
+        let selectedEndpoint = '/api/v1/detect/objects';
+
+        // ---- Detection Type Selector ----
+        document.querySelectorAll('.det-type-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.det-type-btn').forEach(b => {
+                    b.classList.remove('btn-govt-primary', 'active');
+                    b.classList.add('btn-govt-outline');
+                });
+                this.classList.remove('btn-govt-outline');
+                this.classList.add('btn-govt-primary', 'active');
+                selectedEndpoint = this.dataset.endpoint;
+            });
+        });
+
+        // ---- File Upload ----
+        const fileInput = document.getElementById('file-input');
+        const uploadZone = document.getElementById('upload-zone');
+
+        // Drag & drop
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.style.borderColor = 'var(--accent)'; });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.style.borderColor = ''; });
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault();
+            uploadZone.style.borderColor = '';
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', e => {
+            if (e.target.files.length) handleFile(e.target.files[0]);
+        });
+
+        function handleFile(file) {
+            if (file.size > 5 * 1024 * 1024) {
+                alert('File too large. Maximum size is 5MB.');
+                return;
+            }
+
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                document.getElementById('preview-img').src = e.target.result;
+                document.getElementById('image-preview').style.display = 'block';
+                document.getElementById('file-info').textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+                document.getElementById('analyze-btn').disabled = false;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // ---- Analyze ----
+        document.getElementById('analyze-btn').addEventListener('click', async function() {
+            if (!selectedFile) return;
+
+            const btn = this;
+            const btnText = document.getElementById('analyze-text');
+            const btnSpinner = document.getElementById('analyze-spinner');
+            const placeholder = document.getElementById('results-placeholder');
+            const content = document.getElementById('results-content');
+
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'inline-block';
+
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+
+                const response = await fetch(selectedEndpoint, {
+                    method: 'POST',
+                    body: formData,
+                });
+                const data = await response.json();
+
+                placeholder.style.display = 'none';
+                content.style.display = 'block';
+
+                // Show visualization
+                if (data.visualization) {
+                    document.getElementById('result-visualization').src = `data:image/jpeg;base64,${data.visualization}`;
+                    document.getElementById('result-visualization').style.display = 'block';
+                } else {
+                    document.getElementById('result-visualization').style.display = 'none';
+                }
+
+                // Weather special case
+                const weatherDiv = document.getElementById('weather-result');
+                const detectionsTable = document.getElementById('detections-table');
+
+                if (selectedEndpoint.includes('weather')) {
+                    detectionsTable.style.display = 'none';
+                    weatherDiv.style.display = 'block';
+                    weatherDiv.innerHTML = `
+                        <div class="stats-row" style="margin-top:12px;">
+                            <div class="stat-card info">
+                                <div class="stat-icon info"><i class="fas fa-cloud-sun"></i></div>
+                                <div class="stat-content">
+                                    <h3>${data.condition || 'Unknown'}</h3>
+                                    <p>Weather Condition</p>
+                                </div>
+                            </div>
+                            <div class="stat-card saffron">
+                                <div class="stat-icon saffron"><i class="fas fa-percentage"></i></div>
+                                <div class="stat-content">
+                                    <h3>${((data.confidence || 0) * 100).toFixed(1)}%</h3>
+                                    <p>Confidence</p>
+                                </div>
+                            </div>
+                            <div class="stat-card ${data.impact_factor > 0.5 ? 'danger' : 'green'}">
+                                <div class="stat-icon ${data.impact_factor > 0.5 ? 'danger' : 'green'}"><i class="fas fa-exclamation-triangle"></i></div>
+                                <div class="stat-content">
+                                    <h3>${((data.impact_factor || 0) * 100).toFixed(0)}%</h3>
+                                    <p>Impact Factor</p>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    weatherDiv.style.display = 'none';
+
+                    // Summary
+                    const count = data.count || (data.detections?.length || 0);
+                    const vehicleCount = data.vehicle_count ?? '';
+                    const pedCount = data.pedestrian_count ?? '';
+                    let summaryHTML = `<div class="govt-alert govt-alert-info show"><i class="fas fa-info-circle"></i> <span>Detected <strong>${count}</strong> object(s)`;
+                    if (vehicleCount !== '') summaryHTML += ` | Vehicles: <strong>${vehicleCount}</strong>`;
+                    if (pedCount !== '') summaryHTML += ` | Pedestrians: <strong>${pedCount}</strong>`;
+                    summaryHTML += `</span></div>`;
+                    document.getElementById('result-summary').innerHTML = summaryHTML;
+
+                    // Detections table
+                    if (data.detections && data.detections.length > 0) {
+                        detectionsTable.style.display = 'table';
+                        document.getElementById('detections-tbody').innerHTML = data.detections.map((d, i) => {
+                            const cls = d.class || d.status || 'Detected';
+                            const conf = d.confidence != null ? (d.confidence * 100).toFixed(1) + '%' : '—';
+                            const bbox = d.bbox ? d.bbox.map(v => Math.round(v)).join(', ') : '—';
+                            return `<tr><td>${i + 1}</td><td><strong>${cls}</strong></td><td>${conf}</td><td>${bbox}</td></tr>`;
+                        }).join('');
+                    } else {
+                        detectionsTable.style.display = 'none';
+                    }
+                }
+            } catch (e) {
+                document.getElementById('result-summary').innerHTML = 
+                    `<div class="govt-alert govt-alert-danger show"><i class="fas fa-exclamation-circle"></i> <span>Error: ${e.message}</span></div>`;
+                content.style.display = 'block';
+                placeholder.style.display = 'none';
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'inline-flex';
+                btnSpinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>

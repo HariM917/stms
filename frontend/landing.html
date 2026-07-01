@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ApexGrid</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><defs><filter id='blur'><feGaussianBlur in='SourceGraphic' stdDeviation='1'/></filter></defs><path fill='%23334155' d='M8.25 3.75h7.5a2.25 2.25 0 012.25 2.25v12a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-12A2.25 2.25 0 018.25 3.75z'/><circle cx='12' cy='7.5' r='2' fill='%23ef4444' filter='url(%23blur)'/><circle cx='12' cy='7.5' r='1.5' fill='%23f87171'/><circle cx='12' cy='12' r='2' fill='%23f59e0b' filter='url(%23blur)'/><circle cx='12' cy='12' r='1.5' fill='%23fbbf24'/><circle cx='12' cy='16.5' r='2' fill='%2322c55e' filter='url(%23blur)'/><circle cx='12' cy='16.5' r='1.5' fill='%234ade80'/></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="landing.css">
+</head>
+<body class="antialiased">
+
+    <!-- Header -->
+    <header id="header" class="fixed top-0 left-0 right-0 z-40 bg-gray-800 transition-all duration-300 py-4 border-b border-gray-700">
+        <div class="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
+            <!-- Left Corner: Menu Button and Dropdown -->
+            <div class="relative" id="main-menu-container">
+                <button id="main-menu-button" class="p-2 rounded-md text-gray-200 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-slate-400">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                </button>
+                <div id="main-menu" class="hidden absolute left-0 mt-2 w-60 bg-white rounded-lg shadow-xl border border-slate-200 p-2 z-50">
+                    <a href="#home" class="flex items-center py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded nav-link">
+                        <svg class="w-5 h-5 mr-3 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a.75.75 0 011.06 0l8.955 8.955M3.75 21V9.75l7.5-7.5 7.5 7.5V21h-5.25v-6.75h-4.5V21H3.75z" />
+                        </svg>
+                        <span>Home</span>
+                    </a>
+                    <div id="traffic-map-toggle" class="flex items-center justify-between py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded cursor-pointer">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-3 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+                            </svg>
+                            <span>Traffic Maps</span>
+                        </div>
+                        <svg id="traffic-arrow" class="w-4 h-4 transition-transform duration-200" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </div>
+                    <div id="traffic-map-submenu" class="hidden pl-4 border-l-2 border-slate-200 ml-5">
+                        <a href="https://www.google.com/maps/@12.9716,77.5946,12z/data=!5m1!1e1" target="_blank" class="block py-2 pl-4 pr-4 text-sm text-slate-600 hover:bg-slate-100 rounded">Bangalore</a>
+                        <a href="https://www.google.com/maps/@28.7041,77.1025,12z/data=!5m1!1e1" target="_blank" class="block py-2 pl-4 pr-4 text-sm text-slate-600 hover:bg-slate-100 rounded">Delhi</a>
+                        <a href="https://www.google.com/maps/@22.5726,88.3639,12z/data=!5m1!1e1" target="_blank" class="block py-2 pl-4 pr-4 text-sm text-slate-600 hover:bg-slate-100 rounded">Kolkata</a>
+                        <a href="https://www.google.com/maps/@20.2961,85.8245,12z/data=!5m1!1e1" target="_blank" class="block py-2 pl-4 pr-4 text-sm text-slate-600 hover:bg-slate-100 rounded">Bhubaneswar</a>
+                        <a href="https://www.google.com/maps/@18.5204,73.8567,12z/data=!5m1!1e1" target="_blank" class="block py-2 pl-4 pr-4 text-sm text-slate-600 hover:bg-slate-100 rounded">Pune</a>
+                        <a href="https://www.google.com/maps/@13.0827,80.2707,12z/data=!5m1!1e1" target="_blank" class="block py-2 pl-4 pr-4 text-sm text-slate-600 hover:bg-slate-100 rounded">Chennai</a>
+                    </div>
+                    <hr id="traffic-map-divider" class="my-1 border-slate-200">
+                    <a href="#features" class="flex items-center py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded nav-link">
+                        <svg class="w-5 h-5 mr-3 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 21a2.25 2.25 0 004.5 0v-1.125a4.5 4.5 0 00-4.5 0v1.125zM12 3v1.5m0 15V12m0 0a4.5 4.5 0 110-9 4.5 4.5 0 010 9z" />
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M11 11.5h2m-1-1v2" />
+                        </svg>
+                        <span>Features</span>
+                    </a>
+                    <a href="#dashboard" id="dashboard-nav-link" class="flex items-center py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded nav-link">
+                        <svg class="w-5 h-5 mr-3 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M9 4.5l-4.5 15M15 4.5l4.5 15" />
+                           <path stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="3 3" d="M12 4.5v15" />
+                        </svg>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="#how-it-works" class="flex items-center py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded nav-link">
+                       <svg class="w-5 h-5 mr-3 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 11-18 0 9 9 0 0118 0zm-9 5.25h.008v.008H12v-.008z" />
+                        </svg>
+                        <span>How It Works</span>
+                    </a>
+                    <a href="#contact" class="flex items-center py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded nav-link">
+                        <svg class="w-5 h-5 mr-3 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0-1.243.89-2.25 2-2.25h15.5a2 2 0 012 2.25v10.5a2 2 0 01-2 2.25H4.25a2 2 0 01-2-2.25V6.75z" />
+                           <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75l7.693 4.432c.58.334 1.287.334 1.867 0L19.5 6.75" />
+                        </svg>
+                        <span>Contact</span>
+                    </a>
+                    <hr class="my-1 border-slate-200">
+                    <button id="open-terms-from-menu" class="flex items-center w-full text-left py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded">
+                        <svg class="w-5 h-5 mr-3 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
+                        </svg>
+                        <span>Terms & Conditions</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Center: Logo -->
+            <div class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+                <a href="#" class="flex items-center space-x-2 home-link">
+                     <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                        <defs>
+                            <filter id="blur">
+                                <feGaussianBlur in="SourceGraphic" stdDeviation="1"></feGaussianBlur>
+                            </filter>
+                        </defs>
+                        <path fill="#000000" d="M8.25 3.75h7.5a2.25 2.25 0 012.25 2.25v12a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-12A2.25 2.25 0 018.25 3.75z"></path>
+                        <circle cx="12" cy="7.5" r="2" fill="#ef4444" filter="url(#blur)"></circle>
+                        <circle cx="12" cy="7.5" r="1.5" fill="#f87171"></circle>
+                        <circle cx="12" cy="12" r="2" fill="#f59e0b" filter="url(#blur)"></circle>
+                        <circle cx="12" cy="12" r="1.5" fill="#fbbf24"></circle>
+                        <circle cx="12" cy="16.5" r="2" fill="#22c55e" filter="url(#blur)"></circle>
+                        <circle cx="12" cy="16.5" r="1.5" fill="#4ade80"></circle>
+                    </svg>
+                    <h1 class="text-xl font-bold text-white">ApexGrid</h1>
+                </a>
+            </div>
+            
+            <!-- Right Corner: Profile Dropdown -->
+            <div class="relative" id="profile-menu-container">
+                <button id="profile-menu-button" class="p-2 rounded-full text-gray-200 bg-gray-700 border border-gray-600 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white transition-colors duration-200">
+                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                </button>
+                <div id="profile-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-slate-200 p-2 z-50">
+                    <div id="logged-out-view">
+                        <button id="profile-login-button" class="block w-full text-left py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded">Login</button>
+                        <button id="profile-register-button" class="block w-full text-left mt-1 py-2 px-4 text-sm text-slate-700 hover:bg-slate-100 rounded">Register</button>
+                    </div>
+                    <div id="logged-in-view" class="hidden">
+                        <div class="px-4 py-2 text-sm text-slate-700">
+                            <p class="font-semibold">Welcome!</p>
+                            <p class="text-xs text-slate-500 truncate" id="user-email-display">user@example.com</p>
+                        </div>
+                        <hr class="my-1 border-slate-200">
+                        <button id="profile-logout-button" class="block w-full text-left py-2 px-4 text-sm text-red-600 hover:bg-red-50 rounded">Logout</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </header>
+    
+    <main class="pt-16">
+        <!-- Main Content Area -->
+        <div id="main-content">
+            <section id="home-glimpses" class="page-section py-16 sm:py-20 bg-slate-50">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <h3 class="text-3xl font-bold text-center text-slate-800 mb-12">Glimpses of Urban Mobility</h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+                        <img src="https://static.india.com/wp-content/uploads/2024/04/MixCollage-13-Apr-2024-12-42-PM-2934.jpg?impolicy=Medium_Widthonly&w=700" onerror="this.onerror=null;this.src='https://placehold.co/700x700/000000/FFFFFF?text=Image';" alt="Traffic intersection" class="w-full h-full object-cover rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <img src="https://assets.telegraphindia.com/telegraph/2025/Jan/1736690210_new-project-2025-01-12t192615-378.jpg" onerror="this.onerror=null;this.src='https://placehold.co/700x700/000000/FFFFFF?text=Image';" alt="City flyover" class="w-full h-full object-cover rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <img src="https://ichef.bbci.co.uk/ace/standard/976/cpsprodpb/8CFC/production/_92729063_newairportroadnearhebbal.jpg.webp" onerror="this.onerror=null;this.src='https://placehold.co/700x700/000000/FFFFFF?text=Image';" alt="Airport road traffic" class="w-full h-full object-cover rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/7/73/Chennai_Kathipara_bridge.jpg" onerror="this.onerror=null;this.src='https://placehold.co/700x700/000000/FFFFFF?text=Image';" alt="Kathipara bridge Chennai" class="w-full h-full object-cover rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+                    </div>
+                </div>
+            </section>
+            <section id="home-welcome" class="page-section text-center py-16 sm:py-20 lg:py-24">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <h2 class="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-slate-900 leading-tight">Welcome to ApexGrid</h2>
+                    <p class="mt-6 max-w-3xl mx-auto text-lg text-slate-600">Welcome to ApexGrid, an intelligent traffic management platform designed to transform the way cities handle mobility. With real-time traffic monitoring, live tracking, and AI-powered analytics, ApexGrid helps you analyze congestion patterns, predict future traffic flows, and make data-driven decisions for safer and faster travel. From managing peak-hour congestion to optimizing emergency routes, the dashboard provides clear insights and smart control tools that simplify complex road management challenges. Built with the vision of creating smarter, more connected cities, ApexGrid not only delivers live traffic intelligence but also integrates predictive features that reduce congestion and improve road safety. By combining modern technology with user-friendly design, ApexGrid ensures smoother journeys, efficient transportation, and a future-ready urban mobility experience—all from one powerful interface.</p>
+                </div>
+            </section>
+            <section id="features" class="page-section hidden py-16 sm:py-20"><div class="container mx-auto px-4"><h2 class="text-3xl font-bold text-center text-slate-800 mb-12">Features</h2><div class="text-center text-slate-500">Feature descriptions will be added here.</div></div></section>
+            <section id="dashboard" class="page-section hidden py-16 sm:py-20 bg-slate-50">
+                <div class="container mx-auto px-4">
+                    <h2 class="text-3xl font-bold text-center text-slate-800 mb-12">Traffic Management Dashboard</h2>
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-white rounded-xl shadow-lg p-8 mb-8">
+                            <h3 class="text-xl font-semibold text-slate-800 mb-4">Real-time Traffic Intelligence</h3>
+                            <p class="text-slate-600 mb-6">Access our comprehensive traffic management dashboard with live monitoring, AI-powered analytics, and intelligent control systems.</p>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                                <div class="bg-slate-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-slate-800 mb-2">Live Traffic Map</h4>
+                                    <p class="text-sm text-slate-600">Real-time traffic density visualization with interactive nodes</p>
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-slate-800 mb-2">AI Analytics</h4>
+                                    <p class="text-sm text-slate-600">Predictive analysis and intelligent traffic management</p>
+                                </div>
+                                <div class="bg-slate-50 p-4 rounded-lg">
+                                    <h4 class="font-semibold text-slate-800 mb-2">Violation Tracking</h4>
+                                    <p class="text-sm text-slate-600">Automated e-challan generation and enforcement</p>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <button id="access-dashboard-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition-colors duration-200">
+                                    Access Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            <section id="how-it-works" class="page-section hidden py-16 sm:py-20"><div class="container mx-auto px-4"><h2 class="text-3xl font-bold text-center text-slate-800 mb-12">How It Works</h2><div class="text-center text-slate-500">An explanation will be added here.</div></div></section>
+            <section id="contact" class="page-section hidden py-16 sm:py-20 bg-slate-50"><div class="container mx-auto px-4"><h2 class="text-3xl font-bold text-center text-slate-800 mb-12">Contact Us</h2><div class="text-center text-slate-500">A contact form will be available here.</div></div></section>
+        </div>
+
+        <!-- Auth Pages Wrapper -->
+        <div id="auth-content" class="hidden">
+            <!-- Login Page -->
+            <div id="login-page" class="min-h-screen flex items-center justify-center auth-page px-4">
+                 <div class="bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md">
+                    <div class="flex flex-col items-center mb-6">
+                        <a href="#" class="flex items-center space-x-2 home-link">
+                           <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><defs><filter id="blur-login"><feGaussianBlur in="SourceGraphic" stdDeviation="1"/></filter></defs><path fill="#475569" d="M8.25 3.75h7.5a2.25 2.25 0 012.25 2.25v12a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-12A2.25 2.25 0 018.25 3.75z"/><circle cx="12" cy="7.5" r="2" fill="#ef4444" filter="url(#blur-login)"/><circle cx="12" cy="7.5" r="1.5" fill="#f87171"/><circle cx="12" cy="12" r="2" fill="#f59e0b" filter="url(#blur-login)"/><circle cx="12" cy="12" r="1.5" fill="#fbbf24"/><circle cx="12" cy="16.5" r="2" fill="#22c55e" filter="url(#blur-login)"/><circle cx="12" cy="16.5" r="1.5" fill="#4ade80"/></svg>
+                            <h1 class="text-xl font-bold text-slate-600">ApexGrid</h1>
+                        </a>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 text-center mb-6">Login to your Account</h2>
+                    <form id="login-form">
+                        <input type="email" id="login-email" class="w-full p-3 mb-4 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 placeholder:text-gray-400" placeholder="Email Address" required>
+                        <input type="password" id="login-password" class="w-full p-3 mb-4 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 placeholder:text-gray-400" placeholder="Password" required>
+                        <div class="mb-4 flex items-center"><input type="checkbox" id="login-terms-agree" class="h-4 w-4"><label for="login-terms-agree" class="ml-2 text-sm text-gray-700">I agree to the <button type="button" class="font-semibold text-indigo-600 hover:underline open-terms-button">Terms and Conditions</button></label></div>
+                        <button type="submit" id="login-submit-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>Login</button>
+                        <div class="relative flex py-5 items-center"><div class="flex-grow border-t border-gray-300"></div><span class="flex-shrink mx-4 text-sm text-gray-400">OR</span><div class="flex-grow border-t border-gray-300"></div></div>
+                        <button type="button" id="google-signin-button" class="w-full flex items-center justify-center bg-white border border-gray-300 hover:bg-gray-100 font-semibold py-3 rounded-lg"><svg class="w-5 h-5 mr-3" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.08H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-9 20-20c0-2.3-.2-4.6-.4-6.9z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3l5.7-5.7C34 6 29.3 4 24 4 16.3 4 9.6 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2c-2 1.5-4.5 2.4-7.2 2.4-5.2 0-9.6-3.4-11.2-8.1l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.1H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-2.3-.2-4.6-.4-6.9z"/></svg>Register with Google</button>
+                        <p class="text-center text-sm mt-4 text-gray-600">Don't have an account? <button type="button" id="switch-to-register" class="font-semibold text-indigo-600 hover:underline">Register</button></p>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Register Page -->
+            <div id="register-page" class="min-h-screen flex items-center justify-center auth-page px-4">
+                 <div class="bg-white/90 backdrop-blur-sm p-8 rounded-xl shadow-2xl w-full max-w-md">
+                    <div class="flex flex-col items-center mb-6">
+                        <a href="#" class="flex items-center space-x-2 home-link">
+                           <svg class="h-8 w-8" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><defs><filter id="blur-register"><feGaussianBlur in="SourceGraphic" stdDeviation="1"/></filter></defs><path fill="#475569" d="M8.25 3.75h7.5a2.25 2.25 0 012.25 2.25v12a2.25 2.25 0 01-2.25 2.25h-7.5a2.25 2.25 0 01-2.25-2.25v-12A2.25 2.25 0 018.25 3.75z"/><circle cx="12" cy="7.5" r="2" fill="#ef4444" filter="url(#blur-register)"/><circle cx="12" cy="7.5" r="1.5" fill="#f87171"/><circle cx="12" cy="12" r="2" fill="#f59e0b" filter="url(#blur-register)"/><circle cx="12" cy="12" r="1.5" fill="#fbbf24"/><circle cx="12" cy="16.5" r="2" fill="#22c55e" filter="url(#blur-register)"/><circle cx="12" cy="16.5" r="1.5" fill="#4ade80"/></svg>
+                            <h1 class="text-xl font-bold text-slate-600">ApexGrid</h1>
+                        </a>
+                    </div>
+                    <h2 class="text-2xl font-bold text-gray-900 text-center mb-6">Create Account</h2>
+                    <form id="register-form">
+                        <input type="text" id="register-name" class="w-full p-3 mb-4 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 placeholder:text-gray-400" placeholder="User Name" required>
+                        <input type="email" id="register-email" class="w-full p-3 mb-4 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 placeholder:text-gray-400" placeholder="Email Address" required>
+                        <input type="password" id="register-password" class="w-full p-3 mb-4 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 placeholder:text-gray-400" placeholder="Password" required>
+                        <p id="password-length-error" class="text-red-500 text-xs -mt-2 mb-2 hidden">Password must be at least 8 characters.</p>
+                        <p id="password-special-char-error" class="text-red-500 text-xs -mt-2 mb-2 hidden">Password needs one special character.</p>
+                        <input type="password" id="register-confirm-password" class="w-full p-3 mb-4 rounded-lg bg-gray-50 border border-gray-300 text-gray-900 placeholder:text-gray-400" placeholder="Confirm Password" required>
+                        <p id="password-match-error" class="text-red-500 text-xs -mt-2 mb-2 hidden">Passwords do not match.</p>
+                        <div class="mb-4 flex items-center"><input type="checkbox" id="register-terms-agree" class="h-4 w-4"><label for="register-terms-agree" class="ml-2 text-sm text-gray-700">I agree to the <button type="button" class="font-semibold text-indigo-600 hover:underline open-terms-button">Terms and Conditions</button></label></div>
+                        <button type="submit" id="register-submit-button" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed" disabled>Create Account</button>
+                        <p class="text-center text-sm mt-4 text-gray-600">Already have an account? <button type="button" id="switch-to-login" class="font-semibold text-indigo-600 hover:underline">Login</button></p>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer id="footer" class="bg-slate-100 py-8">
+        <div class="container mx-auto px-4 text-center text-slate-500">
+            <p>&copy; 2025 ApexGrid. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <!-- Terms and Conditions Modal (used by all pages) -->
+    <div id="terms-modal" class="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 hidden px-4 py-8">
+        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-2xl relative border border-slate-200">
+            <button id="close-terms-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-800"><svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg></button>
+            <h2 class="text-2xl font-bold text-gray-900 mb-4">Terms and Conditions</h2>
+            <div class="prose max-w-none h-96 overflow-y-auto text-gray-600 pr-4">
+                <h3>Agreement to Terms</h3>
+                <p>By accessing and using the Smart Traffic Management System for Urban Congestion website ("Site"), users agree to comply with and be bound by these terms and conditions. If users do not agree, they must discontinue its use.</p>
+                <h3>Intellectual Property</h3>
+                <p>All content, designs, logos, graphics, and software on the Site are the exclusive property of the project team or its licensors and are protected by intellectual property laws. Users may not copy, reproduce, or distribute these materials without written permission.</p>
+                <h3>Website Use</h3>
+                <p>The Site may only be used for lawful purposes.</p>
+                <p>Users must not misuse the system, attempt unauthorized access, or engage in activity that disrupts operation or security.</p>
+                <h3>Accounts and Security</h3>
+                <p>If the website offers account registration:</p>
+                <ul>
+                    <li>Users must provide accurate information and maintain the confidentiality of their credentials.</li>
+                    <li>The team reserves the right to terminate accounts for suspicious or unauthorised activity.</li>
+                </ul>
+                <h3>Data and Privacy</h3>
+                <p>All data collected via the Site is handled per the posted Privacy Policy. Data processed is for system optimization, analytics, or service improvements only.</p>
+                <h3>Limitation of Liability</h3>
+                <p>The site is provided "as is" and "as available." No warranties are offered regarding accuracy, reliability, or performance. The project team will not be liable for damages resulting from site use or reliance on information provided.</p>
+                <h3>Links to Third Parties</h3>
+                <p>Links to third-party websites are provided for reference. The team is not responsible for content or privacy practices of external sites.</p>
+                <h3>Changes to Terms</h3>
+                <p>Terms may be updated at any time. Continued use of the Site after changes are posted constitutes acceptance of those changes.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="landing.js"></script>
+</body>
+</html>

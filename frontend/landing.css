@@ -1,0 +1,24 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #ffffff; /* white */
+    color: #1f2937; /* text-gray-800 */
+    scroll-behavior: smooth;
+}
+.prose h3 {
+    font-weight: 700;
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+    font-size: 1.125rem;
+}
+.prose p, .prose ul {
+    margin-bottom: 1em;
+}
+.prose ul {
+    list-style-position: inside;
+    list-style-type: disc;
+}
+.auth-page {
+    background-image: url('https://interviewtimes.net/wp-content/uploads/2025/01/Bhubaneswar-e1635445386128.jpeg');
+    background-size: cover;
+    background-position: center;
+}

@@ -1,0 +1,177 @@
+/* Authentication Pages Styling */
+.auth-page {
+    background-color: #f8f9fa;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 20px 0;
+}
+
+.auth-container {
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    margin: 20px 0;
+}
+
+.auth-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.auth-subtitle {
+    color: #7f8c8d;
+    margin-bottom: 20px;
+}
+
+.form-label {
+    font-weight: 500;
+    color: #34495e;
+}
+
+.btn-primary {
+    background-color: #3498db;
+    border-color: #3498db;
+    font-weight: 500;
+    padding: 10px;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #2980b9;
+    border-color: #2980b9;
+}
+
+.alert {
+    padding: 10px 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.form-text {
+    font-size: 12px;
+}
+
+.input-group .btn {
+    z-index: 0;
+}
+
+/* Form validation styles */
+.is-invalid {
+    border-color: #dc3545;
+    background-image: none !important;
+}
+
+.invalid-feedback {
+    display: block;
+    width: 100%;
+    margin-top: 0.25rem;
+    font-size: 80%;
+    color: #dc3545;
+}
+
+/* Loading state styles */
+.btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+/* Password strength indicator */
+.password-strength {
+    margin-top: 5px;
+    height: 5px;
+    border-radius: 3px;
+    transition: all 0.3s;
+}
+
+.strength-weak {
+    width: 33%;
+    background-color: #e74c3c;
+}
+
+.strength-medium {
+    width: 66%;
+    background-color: #f39c12;
+}
+
+.strength-strong {
+    width: 100%;
+    background-color: #27ae60;
+}
+
+/* Social login buttons */
+.social-login {
+    margin: 20px 0;
+    text-align: center;
+}
+
+.social-login-divider {
+    display: flex;
+    align-items: center;
+    margin: 15px 0;
+}
+
+.social-login-divider:before,
+.social-login-divider:after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.social-login-divider span {
+    padding: 0 10px;
+    color: #95a5a6;
+    font-size: 14px;
+}
+
+.btn-social {
+    width: 100%;
+    margin: 8px 0;
+    padding: 10px;
+    font-weight: 500;
+}
+
+.btn-google {
+    background-color: #db4437;
+    border-color: #db4437;
+    color: white;
+}
+
+.btn-facebook {
+    background-color: #4267B2;
+    border-color: #4267B2;
+    color: white;
+}
+
+.btn-github {
+    background-color: #333;
+    border-color: #333;
+    color: white;
+}
+
+/* Remember me and forgot password */
+.auth-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.forgot-password {
+    font-size: 14px;
+    color: #3498db;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .auth-container {
+        padding: 20px;
+    }
+    
+    .auth-title {
+        font-size: 24px;
+    }
+}

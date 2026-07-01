@@ -1,0 +1,103 @@
+/* Detection results styling */
+.detection-result-img {
+    max-width: 100%;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    margin-bottom: 20px;
+}
+
+.detection-results {
+    min-height: 200px;
+    padding: 15px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+}
+
+.stats-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    margin: 20px 0;
+}
+
+.stat-card {
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    text-align: center;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.1);
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.insights-container {
+    min-height: 150px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    padding: 15px;
+}
+
+.video-container {
+    position: relative;
+    overflow: hidden;
+    border-radius: 5px;
+    background-color: #000;
+    margin-bottom: 15px;
+}
+
+.video-container img {
+    width: 100%;
+    display: block;
+}
+
+.upload-container {
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* Traffic sign specific styles */
+.traffic-sign-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.traffic-sign-icon {
+    width: 40px;
+    height: 40px;
+    margin-right: 15px;
+    object-fit: contain;
+}
+
+/* Loading spinner */
+.loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stat-card {
+        margin-bottom: 15px;
+    }
+}

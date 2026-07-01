@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Tester - Smart Traffic Management System</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .endpoint {
+            margin-bottom: 30px;
+            border: 1px solid #ddd;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .endpoint h2 {
+            margin-top: 0;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+            color: #444;
+        }
+        input, textarea {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 4px;
+            min-height: 50px;
+        }
+        .success {
+            background-color: #dff2bf;
+            color: #4F8A10;
+        }
+        .error {
+            background-color: #ffecec;
+            color: #D8000C;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>API Testing Tool</h1>
+        <p>Use this tool to test API endpoints for the Smart Traffic Management System.</p>
+
+        <div class="endpoint">
+            <h2>Register User</h2>
+            <input type="text" id="register-username" placeholder="Username" value="testuser">
+            <input type="email" id="register-email" placeholder="Email" value="test@example.com">
+            <input type="password" id="register-password" placeholder="Password" value="password123">
+            <button onclick="registerUser()">Register</button>
+            <div class="result" id="register-result"></div>
+        </div>
+
+        <div class="endpoint">
+            <h2>Login User</h2>
+            <input type="text" id="login-username" placeholder="Username" value="testuser">
+            <input type="password" id="login-password" placeholder="Password" value="password123">
+            <button onclick="loginUser()">Login</button>
+            <div class="result" id="login-result"></div>
+        </div>
+
+        <div class="endpoint">
+            <h2>Detect Objects</h2>
+            <input type="file" id="object-image" accept="image/*">
+            <button onclick="detectObjects()">Detect Objects</button>
+            <div class="result" id="object-result"></div>
+            <img id="object-result-image" style="max-width: 100%; display: none;">
+        </div>
+
+        <div class="endpoint">
+            <h2>Detect Traffic Signs</h2>
+            <input type="file" id="traffic-image" accept="image/*">
+            <button onclick="detectTrafficSigns()">Detect Traffic Signs</button>
+            <div class="result" id="traffic-result"></div>
+            <img id="traffic-result-image" style="max-width: 100%; display: none;">
+        </div>
+
+        <div class="endpoint">
+            <h2>API Status</h2>
+            <button onclick="checkStatus()">Check API Status</button>
+            <div class="result" id="status-result"></div>
+        </div>
+    </div>
+
+    <script>
+        // API URLs
+        const AUTH_API_URL = "http://localhost:3000";
+        const BACKEND_API_URL = "http://localhost:8001";
+        
+        let authToken = localStorage.getItem('authToken');
+        
+        // Register User
+        async function registerUser() {
+            const username = document.getElementById('register-username').value;
+            const email = document.getElementById('register-email').value;
+            const password = document.getElementById('register-password').value;
+            const resultElement = document.getElementById('register-result');
+            
+            resultElement.innerHTML = "Registering...";
+            resultElement.className = "result";
+            
+            try {
+                const response = await fetch(`${AUTH_API_URL}/api/register`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    resultElement.innerHTML = `Success! User ${username} registered.`;
+                    resultElement.className = "result success";
+                } else {
+                    resultElement.innerHTML = `Error: ${data.message || 'Registration failed'}`;
+                    resultElement.className = "result error";
+                }
+            } catch (error) {
+                resultElement.innerHTML = `Error: ${error.message}`;
+                resultElement.className = "result error";
+                console.error('Registration error:', error);
+            }
+        }
+        
+        // Login User
+        async function loginUser() {
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
+            const resultElement = document.getElementById('login-result');
+            
+            resultElement.innerHTML = "Logging in...";
+            resultElement.className = "result";
+            
+            try {
+                const response = await fetch(`${AUTH_API_URL}/api/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.token;
+                    localStorage.setItem('authToken', authToken);
+                    resultElement.innerHTML = `Success! Logged in as ${username}. Token: ${authToken.substring(0, 20)}...`;
+                    resultElement.className = "result success";
+                } else {
+                    resultElement.innerHTML = `Error: ${data.message || 'Login failed'}`;
+                    resultElement.className = "result error";
+                }
+            } catch (error) {
+                resultElement.innerHTML = `Error: ${error.message}`;
+                resultElement.className = "result error";
+                console.error('Login error:', error);
+            }
+        }
+        
+        // Detect Objects
+        async function detectObjects() {
+            const fileInput = document.getElementById('object-image');
+            const resultElement = document.getElementById('object-result');
+            const resultImage = document.getElementById('object-result-image');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                resultElement.innerHTML = "Please select an image file.";
+                resultElement.className = "result error";
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            resultElement.innerHTML = "Processing image...";
+            resultElement.className = "result";
+            resultImage.style.display = "none";
+            
+            try {
+                const headers = {};
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch(`${BACKEND_API_URL}/api/detect/objects`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.result_image) {
+                        resultImage.src = "data:image/jpeg;base64," + data.result_image;
+                        resultImage.style.display = "block";
+                    }
+                    
+                    resultElement.innerHTML = `Detected ${data.detections ? data.detections.length : 0} objects.`;
+                    if (data.detections && data.detections.length > 0) {
+                        resultElement.innerHTML += "<br>Objects: " + 
+                            data.detections.map(d => `${d.class} (${Math.round(d.confidence*100)}%)`).join(", ");
+                    }
+                    resultElement.className = "result success";
+                } else {
+                    resultElement.innerHTML = `Error: ${data.message || 'Detection failed'}`;
+                    resultElement.className = "result error";
+                }
+            } catch (error) {
+                resultElement.innerHTML = `Error: ${error.message}`;
+                resultElement.className = "result error";
+                console.error('Object detection error:', error);
+            }
+        }
+        
+        // Detect Traffic Signs
+        async function detectTrafficSigns() {
+            const fileInput = document.getElementById('traffic-image');
+            const resultElement = document.getElementById('traffic-result');
+            const resultImage = document.getElementById('traffic-result-image');
+            
+            if (!fileInput.files || fileInput.files.length === 0) {
+                resultElement.innerHTML = "Please select an image file.";
+                resultElement.className = "result error";
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const formData = new FormData();
+            formData.append('image', file);
+            
+            resultElement.innerHTML = "Processing image...";
+            resultElement.className = "result";
+            resultImage.style.display = "none";
+            
+            try {
+                const headers = {};
+                if (authToken) {
+                    headers['Authorization'] = `Bearer ${authToken}`;
+                }
+                
+                const response = await fetch(`${BACKEND_API_URL}/api/detect/traffic_signs`, {
+                    method: 'POST',
+                    headers: headers,
+                    body: formData
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (data.result_image) {
+                        resultImage.src = "data:image/jpeg;base64," + data.result_image;
+                        resultImage.style.display = "block";
+                    }
+                    
+                    resultElement.innerHTML = `Detected ${data.detections ? data.detections.length : 0} traffic signs.`;
+                    if (data.detections && data.detections.length > 0) {
+                        resultElement.innerHTML += "<br>Signs: " + 
+                            data.detections.map(d => `${d.sign_type} (${Math.round(d.confidence*100)}%)`).join(", ");
+                    }
+                    resultElement.className = "result success";
+                } else {
+                    resultElement.innerHTML = `Error: ${data.message || 'Detection failed'}`;
+                    resultElement.className = "result error";
+                }
+            } catch (error) {
+                resultElement.innerHTML = `Error: ${error.message}`;
+                resultElement.className = "result error";
+                console.error('Traffic sign detection error:', error);
+            }
+        }
+        
+        // Check API Status
+        async function checkStatus() {
+            const resultElement = document.getElementById('status-result');
+            resultElement.innerHTML = "Checking API status...";
+            resultElement.className = "result";
+            
+            const services = [
+                { name: "Authentication Server", url: `${AUTH_API_URL}/api/health` },
+                { name: "Backend API Server", url: `${BACKEND_API_URL}/docs` }
+            ];
+            
+            let statusHTML = "";
+            
+            for (const service of services) {
+                try {
+                    const response = await fetch(service.url, { 
+                        method: 'GET',
+                        mode: 'no-cors'
+                    });
+                    
+                    // For no-cors we can't check status, just that we didn't get an exception
+                    statusHTML += `<p>✅ ${service.name}: Service appears to be running</p>`;
+                } catch (error) {
+                    statusHTML += `<p>❌ ${service.name}: Service is down or not reachable</p>`;
+                    console.error(`${service.name} error:`, error);
+                }
+            }
+            
+            resultElement.innerHTML = statusHTML;
+        }
+        
+        // Check status on page load
+        window.onload = function() {
+            checkStatus();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+# ===== Python =====
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+
+# ===== Node.js (deprecated — kept for cleanup) =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== Environment & Secrets =====
+.env
+.env.local
+.env.production
+
+# ===== ML Model Weights =====
+*.pt
+*.pth
+*.onnx
+*.tflite
+ai_models/*.pth
+
+# ===== Database Files =====
+*.db
+*.sqlite3
+users_db.json
+
+# ===== Logs =====
+*.log
+logs/
+
+# ===== IDE & Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ===== Uploaded / Generated Files =====
+snapshots/
+traffic_sign_frames/
+uploads/
+scratch/
+
+# ===== Notebooks (optional — keep demo ones) =====
+Untitled*.ipynb
+
+# ===== OS Files =====
+desktop.ini
+ehthumbs.db
+
+# ===== Testing & Coverage =====
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ===== Docker =====
+docker-compose.override.yml
+
+# ===== Alembic =====
+# Keep migrations tracked, but not auto-generated cache
+alembic/versions/__pycache__/
+
+# ===== Deprecated =====
+backend/_deprecated/

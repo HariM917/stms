@@ -1,0 +1,206 @@
+/* Additional styles for Smart Traffic Management System */
+
+/* Enhanced card hover effect */
+.card {
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Button hover effects */
+.btn {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn:after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 0;
+    background-color: rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    z-index: 1;
+}
+
+.btn:hover:after {
+    height: 100%;
+}
+
+/* Custom upload button styling */
+.custom-file-upload {
+    border: 2px dashed #dee2e6;
+    border-radius: 8px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f8f9fa;
+}
+
+.custom-file-upload:hover {
+    border-color: #0d6efd;
+    background-color: #f1f8ff;
+}
+
+.custom-file-upload i {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: #6c757d;
+}
+
+.custom-file-upload:hover i {
+    color: #0d6efd;
+}
+
+/* Results section styling */
+.results-container {
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.stat-card {
+    padding: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    margin-bottom: 1rem;
+    transition: all 0.3s ease;
+}
+
+.stat-card i {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.stat-card h3 {
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.stat-card p {
+    opacity: 0.8;
+    font-size: 0.9rem;
+}
+
+/* Traffic light indicators with animations */
+.traffic-light {
+    width: 25px;
+    height: 25px;
+    display: inline-block;
+    border-radius: 50%;
+    margin-right: 5px;
+    position: relative;
+}
+
+.traffic-light:after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+    opacity: 0;
+}
+
+.traffic-light.red {
+    background-color: #dc3545;
+}
+
+.traffic-light.red:after {
+    box-shadow: 0 0 10px #dc3545;
+}
+
+.traffic-light.yellow {
+    background-color: #ffc107;
+}
+
+.traffic-light.yellow:after {
+    box-shadow: 0 0 10px #ffc107;
+}
+
+.traffic-light.green {
+    background-color: #198754;
+}
+
+.traffic-light.green:after {
+    box-shadow: 0 0 10px #198754;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); opacity: 0; }
+    50% { transform: scale(1.5); opacity: 0.4; }
+    100% { transform: scale(1); opacity: 0; }
+}
+
+/* Image preview container */
+.preview-container {
+    position: relative;
+}
+
+.preview-container img {
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Loading animation improvements */
+.loading-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+}
+
+.loading-text {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* Detection box styling */
+.detection-box {
+    border-left: 4px solid;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    background-color: #f8f9fa;
+    border-radius: 0 4px 4px 0;
+}
+
+.detection-box.vehicle {
+    border-left-color: #0d6efd;
+}
+
+.detection-box.person {
+    border-left-color: #dc3545;
+}
+
+.detection-box.pothole {
+    border-left-color: #ffc107;
+}
+
+/* Responsive improvements */
+@media (max-width: 576px) {
+    .jumbotron {
+        padding: 1.5rem;
+    }
+    
+    .stat-card {
+        padding: 1rem;
+    }
+    
+    .stat-card i {
+        font-size: 2rem;
+    }
+}

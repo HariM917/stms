@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login — Smart Traffic Management System | Government of India</title>
+    <meta name="description" content="Login to the Smart Traffic Management System portal — Government of India initiative for AI-powered traffic management.">
+    <link rel="stylesheet" href="css/govt.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="auth-page">
+
+    <!-- Skip Navigation -->
+    <a href="#main-content" class="skip-nav">Skip to main content</a>
+
+    <!-- Tricolor Banner -->
+    <div class="tricolor-banner">
+        <div class="tricolor-saffron"></div>
+        <div class="tricolor-white"></div>
+        <div class="tricolor-green"></div>
+    </div>
+
+    <!-- Government Header -->
+    <header class="govt-header">
+        <div class="govt-header-inner">
+            <div class="govt-emblem-section">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg" 
+                     alt="National Emblem of India" class="govt-emblem">
+                <div class="govt-titles">
+                    <span class="dept-name">Ministry of Road Transport & Highways</span>
+                    <span class="portal-name">Smart Traffic Management System</span>
+                    <span class="portal-subtitle">AI-Powered Traffic Intelligence Portal</span>
+                </div>
+            </div>
+            <div class="govt-header-right">
+                <div class="font-size-controls">
+                    <span style="color:rgba(255,255,255,0.6);font-size:11px;">A</span>
+                    <button onclick="document.body.style.fontSize='13px'" title="Small font">A<sup>-</sup></button>
+                    <button onclick="document.body.style.fontSize='14px'" title="Normal font">A</button>
+                    <button onclick="document.body.style.fontSize='16px'" title="Large font">A<sup>+</sup></button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main id="main-content" style="flex:1; display:flex; align-items:center; justify-content:center; padding: 40px 20px;">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <div style="margin-bottom:8px;">
+                    <i class="fas fa-shield-halved" style="font-size:28px; color:var(--saffron);"></i>
+                </div>
+                <h2>Secure Login</h2>
+                <p>Enter your credentials to access the STMS Portal</p>
+            </div>
+            <div class="auth-card-body">
+                <div id="error-message" class="govt-alert govt-alert-danger">
+                    <i class="fas fa-exclamation-circle"></i> <span></span>
+                </div>
+
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="email">Email Address <span class="required">*</span></label>
+                        <input type="email" class="form-input" id="email" name="email" 
+                               placeholder="Enter your registered email" required autocomplete="email">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password <span class="required">*</span></label>
+                        <div class="form-input-group">
+                            <input type="password" class="form-input" id="password" name="password" 
+                                   placeholder="Enter your password" required autocomplete="current-password">
+                            <button type="button" id="toggle-password" title="Show/Hide password">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-govt btn-govt-primary" id="login-btn" style="width:100%; justify-content:center;">
+                        <span id="login-text"><i class="fas fa-sign-in-alt"></i> Sign In</span>
+                        <span id="login-spinner" class="spinner" style="display:none;"></span>
+                    </button>
+                </form>
+
+                <div style="text-align:center; margin-top:16px; font-size:13px;">
+                    <p style="color:var(--text-muted);">Don't have an account? <a href="govt-register.html">Register here</a></p>
+                </div>
+
+                <div style="margin-top:16px; padding-top:16px; border-top:1px solid var(--border-color); text-align:center; font-size:11px; color:var(--text-muted);">
+                    <p><strong>Demo Credentials:</strong> demo@example.com / demo123</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="govt-footer">
+        <div class="govt-footer-bottom">
+            <div class="footer-bottom-inner">
+                <span>© 2026 Smart Traffic Management System | Government of India</span>
+                <span>Designed & Developed by National Informatics Centre (NIC)</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Tricolor Bottom -->
+    <div class="tricolor-banner">
+        <div class="tricolor-saffron"></div>
+        <div class="tricolor-white"></div>
+        <div class="tricolor-green"></div>
+    </div>
+
+    <script src="js/govt-auth.js"></script>
+    <script>
+        // Redirect if already logged in
+        if (isAuthenticated()) {
+            window.location.href = 'govt-dashboard.html';
+        }
+
+        // Toggle password visibility
+        document.getElementById('toggle-password')?.addEventListener('click', function() {
+            const pwd = document.getElementById('password');
+            const icon = this.querySelector('i');
+            if (pwd.type === 'password') {
+                pwd.type = 'text';
+                icon.classList.replace('fa-eye', 'fa-eye-slash');
+            } else {
+                pwd.type = 'password';
+                icon.classList.replace('fa-eye-slash', 'fa-eye');
+            }
+        });
+
+        // Handle login form
+        document.getElementById('login-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('error-message');
+            const btnText = document.getElementById('login-text');
+            const btnSpinner = document.getElementById('login-spinner');
+            const btn = document.getElementById('login-btn');
+
+            errorEl.classList.remove('show');
+            btn.disabled = true;
+            btnText.style.display = 'none';
+            btnSpinner.style.display = 'inline-block';
+
+            try {
+                await login(email, password);
+                window.location.href = 'govt-dashboard.html';
+            } catch (err) {
+                errorEl.querySelector('span').textContent = err.message;
+                errorEl.classList.add('show');
+            } finally {
+                btn.disabled = false;
+                btnText.style.display = 'inline-flex';
+                btnSpinner.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
