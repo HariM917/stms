@@ -60,9 +60,8 @@ You can also run the entire application using Docker Compose:
 docker-compose up --build
 ```
 
-## Contributing
-
-Contributions are welcome! Please create a new branch for any feature or bug fix and submit a pull request.
+## Contributors
+  Hari.M ,Dillikumar M S
 
 ## License
 
