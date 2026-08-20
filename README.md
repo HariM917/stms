@@ -61,7 +61,7 @@ docker-compose up --build
 ```
 
 ## Contributors
-  Hari.M ,Dillikumar M S
+  Hari.M ,Dillikumar M S , MAHIMA REETHI RODRIGO A
 
 ## License
 
