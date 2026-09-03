@@ -29,6 +29,15 @@ async def test_health_contains_detector_status(client):
 
 
 @pytest.mark.asyncio
+async def test_liveness_probe(client):
+    """Liveness probe should return status alive."""
+    response = await client.get("/api/health/live")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "alive"
+
+
+@pytest.mark.asyncio
 async def test_readiness_probe(client):
     """Readiness probe should return ready: true when DB is available."""
     response = await client.get("/api/health/ready")

@@ -93,9 +93,19 @@ async def get_db() -> AsyncGenerator[AsyncSession, None]:
 
 async def init_db() -> None:
     """
-    Initialize the database — create tables if they don't exist.
-    In production, Alembic migrations should be used instead.
+    Initialize the database.
+    In development/testing, creates tables if they don't exist.
+    In production, table creation via Base.metadata.create_all is strictly disabled;
+    Alembic migrations are required.
     """
+    settings = get_settings()
+    if settings.is_production:
+        engine = _get_engine()
+        from sqlalchemy import text
+        async with engine.connect() as conn:
+            await conn.execute(text("SELECT 1"))
+        return
+
     engine = _get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

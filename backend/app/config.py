@@ -2,11 +2,23 @@
 Application configuration loaded from environment variables.
 Uses pydantic-settings for validation and type safety.
 """
-import os
 from pathlib import Path
 from functools import lru_cache
+from typing import Optional
+import urllib.parse
 from pydantic_settings import BaseSettings
-from pydantic import Field
+from pydantic import Field, model_validator
+
+
+KNOWN_INSECURE_SECRETS = {
+    "change-me-in-production",
+    "secret",
+    "secretkey",
+    "password",
+    "admin",
+    "123456",
+    "default",
+}
 
 
 class Settings(BaseSettings):
@@ -32,7 +44,7 @@ class Settings(BaseSettings):
     db_host: str = Field(default="localhost", alias="DB_HOST")
     db_port: int = Field(default=5432, alias="DB_PORT")
     db_user: str = Field(default="postgres", alias="DB_USER")
-    db_password: str = Field(default="", alias="DB_PASSWORD")
+    db_password: str = Field(default="", alias="DB_PASSWORD", repr=False)
     db_database: str = Field(default="stms_db", alias="DB_DATABASE")
 
     # Database driver: "postgresql" (production) or "sqlite" (local dev)
@@ -45,18 +57,31 @@ class Settings(BaseSettings):
     db_echo: bool = Field(default=False, alias="DB_ECHO")
 
     # --- Authentication ---
-    jwt_secret: str = Field(default="change-me-in-production", alias="JWT_SECRET")
+    jwt_secret: str = Field(default="change-me-in-production", alias="JWT_SECRET", repr=False)
     jwt_algorithm: str = "HS256"
     jwt_expiration_hours: int = 8
 
-    # --- Rate Limiting ---
+    # Bootstrap Admin (Optional: only create if explicitly set)
+    bootstrap_admin_email: Optional[str] = Field(default=None, alias="BOOTSTRAP_ADMIN_EMAIL")
+    bootstrap_admin_password: Optional[str] = Field(default=None, alias="BOOTSTRAP_ADMIN_PASSWORD", repr=False)
+
+    # --- Rate Limiting & Redis ---
     rate_limit_requests: int = Field(default=100, alias="RATE_LIMIT_REQUESTS")
     rate_limit_window_seconds: int = Field(default=900, alias="RATE_LIMIT_WINDOW")  # 15 min
+    redis_url: Optional[str] = Field(default=None, alias="REDIS_URL")
+
+    # --- Upload Limits ---
+    max_upload_size_bytes: int = Field(default=10 * 1024 * 1024, alias="MAX_UPLOAD_SIZE_BYTES")  # 10MB
+    max_image_dimension: int = Field(default=4096, alias="MAX_IMAGE_DIMENSION")
+    max_image_pixels: int = Field(default=16_000_000, alias="MAX_IMAGE_PIXELS")
+
+    # --- Model Control ---
+    allow_mock_models: bool = Field(default=False, alias="ALLOW_MOCK_MODELS")
 
     # --- Paths ---
     root_dir: Path = Path(__file__).resolve().parent.parent
 
-    # --- Detection ---
+    # --- Detection Defaults ---
     confidence_threshold: float = 0.5
     nms_threshold: float = 0.4
     max_detections: int = 100
@@ -66,6 +91,41 @@ class Settings(BaseSettings):
         "env_file_encoding": "utf-8",
         "extra": "ignore",
     }
+
+    @model_validator(mode="after")
+    def validate_production_readiness(self) -> "Settings":
+        """Strict validation for production mode."""
+        env_clean = self.environment.strip().lower()
+        is_prod = env_clean in ("production", "prod")
+
+        if is_prod:
+            # 1. Reject weak or default JWT secret
+            secret = self.jwt_secret.strip()
+            if (
+                len(secret) < 32
+                or secret in KNOWN_INSECURE_SECRETS
+                or any(bad in secret.lower() for bad in ("change-me", "secretkey", "admin123", "password123"))
+            ):
+                raise ValueError(
+                    "CRITICAL SECURITY CONFIGURATION ERROR: "
+                    "In production, JWT_SECRET must be at least 32 characters long and cannot be a default or known weak secret."
+                )
+
+            # 2. Reject SQLite in production
+            if self.db_driver.strip().lower() == "sqlite":
+                raise ValueError(
+                    "DATABASE CONFIGURATION ERROR: "
+                    "SQLite is not permitted in production. DB_DRIVER must be 'postgresql'."
+                )
+
+            # 3. Reject mock models in production
+            if self.allow_mock_models:
+                raise ValueError(
+                    "AI SAFETY ERROR: "
+                    "ALLOW_MOCK_MODELS cannot be True in production."
+                )
+
+        return self
 
     @property
     def models_dir(self) -> Path:
@@ -84,25 +144,29 @@ class Settings(BaseSettings):
 
     @property
     def is_production(self) -> bool:
-        return self.environment.lower() == "production"
+        return self.environment.strip().lower() in ("production", "prod")
 
     @property
     def database_url(self) -> str:
         """Synchronous database URL (for Alembic)."""
-        if self.db_driver == "sqlite":
+        if self.db_driver.strip().lower() == "sqlite":
             return f"sqlite:///{self.root_dir / 'stms.db'}"
+        user = urllib.parse.quote_plus(self.db_user)
+        pwd = urllib.parse.quote_plus(self.db_password)
         return (
-            f"postgresql://{self.db_user}:{self.db_password}"
+            f"postgresql://{user}:{pwd}"
             f"@{self.db_host}:{self.db_port}/{self.db_database}"
         )
 
     @property
     def database_url_async(self) -> str:
         """Async database URL (for SQLAlchemy async engine)."""
-        if self.db_driver == "sqlite":
+        if self.db_driver.strip().lower() == "sqlite":
             return f"sqlite+aiosqlite:///{self.root_dir / 'stms.db'}"
+        user = urllib.parse.quote_plus(self.db_user)
+        pwd = urllib.parse.quote_plus(self.db_password)
         return (
-            f"postgresql+asyncpg://{self.db_user}:{self.db_password}"
+            f"postgresql+asyncpg://{user}:{pwd}"
             f"@{self.db_host}:{self.db_port}/{self.db_database}"
         )
 
@@ -111,3 +175,4 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     """Cached settings singleton. Call this to get the app configuration."""
     return Settings()
+

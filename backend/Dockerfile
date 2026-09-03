@@ -1,27 +1,24 @@
 # ==============================================================================
-# STMS Backend — Multi-stage Dockerfile
+# STMS Backend — Production Hardened Multi-stage Dockerfile
 # ==============================================================================
 # Build:  docker build -t stms-backend .
 # Run:    docker run -p 8001:8001 --env-file .env stms-backend
 # ==============================================================================
 
 # ---- Stage 1: Builder (install Python deps) ----
-FROM python:3.11-slim AS builder
+FROM python:3.11-slim-bookworm AS builder
 
 WORKDIR /build
 
-# System deps for building Python packages (numpy, opencv, etc.)
+# System dependencies for building wheels
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install Python dependencies
-COPY pyproject.toml ./
 COPY requirements.txt ./
 
-# Use pip to install dependencies into a virtual env
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
@@ -29,16 +26,16 @@ RUN pip install --no-cache-dir --upgrade pip setuptools wheel \
 
 
 # ---- Stage 2: Runtime ----
-FROM python:3.11-slim AS runtime
+FROM python:3.11-slim-bookworm AS runtime
 
-# System libraries needed at runtime
+# Runtime system libraries
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1-mesa-glx \
+    libgl1 \
     libglib2.0-0 \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Create non-root user
+# Create dedicated non-root service user
 RUN groupadd -r stms && useradd -r -g stms -m stms
 
 # Copy virtual env from builder
@@ -49,26 +46,29 @@ ENV PYTHONDONTWRITEBYTECODE=1
 
 WORKDIR /app
 
-# Copy application code
+# Copy application and ML packages
 COPY app/ ./app/
 COPY detectors/ ./detectors/
 COPY optimization/ ./optimization/
 COPY llm/ ./llm/
-COPY ai_models/ ./ai_models/
+COPY alembic.ini ./
+COPY alembic/ ./alembic/
 
-# Create required directories
+# Copy models if present
+COPY ai_models/ ./ai_models/
+COPY models/ ./models/
+COPY yolov8n.pt* ./
+
+# Create operational directories with non-root ownership
 RUN mkdir -p logs snapshots uploads \
     && chown -R stms:stms /app
 
-# Switch to non-root user
 USER stms
 
-# Expose the API port
 EXPOSE 8001
 
-# Health check
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD curl -f http://localhost:8001/api/health || exit 1
+# Production readiness probe
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD curl -f http://localhost:8001/api/health/ready || exit 1
 
-# Run the server
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "1"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8001", "--workers", "2", "--proxy-headers", "--forwarded-allow-ips", "*"]

@@ -120,29 +120,51 @@ def initialize_all():
     """
     Initialize all detectors, the optimizer, and the LLM module.
     Called once during application startup (lifespan).
-    Falls back to mock detectors on failure.
+    Mock detectors are strictly prohibited in production and only permitted
+    when ENVIRONMENT=development and ALLOW_MOCK_MODELS=true.
     """
     global _detectors, _optimizer, _insights_llm
+    from app.config import get_settings
+    settings = get_settings()
 
-    logger.info("Initializing detection services...")
+    logger.info("Initializing detection services (environment=%s)...", settings.environment)
 
-    # Start with mocks for all detector types
+    allow_mocks = (not settings.is_production) and settings.allow_mock_models
     detector_names = ["object", "pothole", "weather", "traffic_sign", "railway_crossing"]
-    _detectors = {name: MockDetector(name) for name in detector_names}
+    _detectors = {name: None for name in detector_names}
 
     # Try loading real detectors
     detector_classes = _try_import_detectors()
-    for name, cls in detector_classes.items():
-        try:
-            detector = cls()
-            # Check if the model actually loaded
-            if hasattr(detector, "model") and detector.model is None:
-                logger.warning("%s detector model is None — keeping mock", name)
+    for name in detector_names:
+        cls = detector_classes.get(name)
+        if cls:
+            try:
+                detector = cls()
+                # Check if model loaded successfully
+                if hasattr(detector, "model") and detector.model is None:
+                    if allow_mocks:
+                        _detectors[name] = MockDetector(name)
+                        logger.warning("DEV: %s model is None — using mock (ALLOW_MOCK_MODELS=true)", name)
+                    else:
+                        _detectors[name] = None
+                        logger.warning("PROD/SAFE: %s model is None — mock disabled", name)
+                else:
+                    _detectors[name] = detector
+                    logger.info("✓ %s detector initialized successfully", name)
+            except Exception as e:
+                logger.error("Error initializing %s detector: %s", name, e)
+                if allow_mocks:
+                    _detectors[name] = MockDetector(name)
+                    logger.warning("DEV: Using mock for %s because ALLOW_MOCK_MODELS=true", name)
+                else:
+                    _detectors[name] = None
+        else:
+            if allow_mocks:
+                _detectors[name] = MockDetector(name)
+                logger.warning("DEV: %s class not found — using mock (ALLOW_MOCK_MODELS=true)", name)
             else:
-                _detectors[name] = detector
-                logger.info("✓ %s detector initialized", name)
-        except Exception as e:
-            logger.warning("✗ %s detector failed: %s — using mock", name, e)
+                _detectors[name] = None
+                logger.error("PROD/SAFE: %s class not found — mock disabled", name)
 
     # Try loading optimizer and LLM
     optimizer_cls, llm_cls = _try_import_extras()
@@ -152,20 +174,30 @@ def initialize_all():
             _optimizer = optimizer_cls()
             logger.info("✓ Traffic signal optimizer initialized")
         except Exception as e:
-            logger.warning("✗ Optimizer failed: %s", e)
+            logger.error("Optimizer initialization failed: %s", e)
+            _optimizer = None
+    else:
+        _optimizer = None
 
     if llm_cls:
         try:
             _insights_llm = llm_cls()
             logger.info("✓ Traffic insights LLM initialized")
         except Exception as e:
-            logger.warning("✗ LLM failed: %s", e)
+            logger.error("LLM initialization failed: %s", e)
+            _insights_llm = None
+    else:
+        _insights_llm = None
+
+    real_count = sum(1 for d in _detectors.values() if d is not None and not getattr(d, "_is_mock", False))
+    mock_count = sum(1 for d in _detectors.values() if d is not None and getattr(d, "_is_mock", False))
+    none_count = sum(1 for d in _detectors.values() if d is None)
 
     logger.info(
-        "Initialization complete — %d detectors loaded (%d real, %d mock)",
-        len(_detectors),
-        sum(1 for d in _detectors.values() if not getattr(d, "_is_mock", False)),
-        sum(1 for d in _detectors.values() if getattr(d, "_is_mock", False)),
+        "Initialization complete — %d real detectors, %d mock detectors, %d unavailable",
+        real_count,
+        mock_count,
+        none_count,
     )
 
 
@@ -178,6 +210,18 @@ def get_detector(name: str):
     return _detectors.get(name)
 
 
+def is_mock(detector) -> bool:
+    """Check if a detector instance is a mock."""
+    return bool(getattr(detector, "_is_mock", False))
+
+
+def is_mock_allowed() -> bool:
+    """Check if mock models are currently allowed by configuration."""
+    from app.config import get_settings
+    settings = get_settings()
+    return (not settings.is_production) and settings.allow_mock_models
+
+
 def get_optimizer():
     return _optimizer
 
@@ -187,8 +231,9 @@ def get_insights_llm():
 
 
 def get_detector_status() -> dict:
-    """Return a dict of detector availability for the health endpoint."""
+    """Return a dict of detector availability for health and readiness endpoints."""
     return {
-        name: not getattr(det, "_is_mock", False)
+        name: (det is not None and not getattr(det, "_is_mock", False))
         for name, det in _detectors.items()
     }
+

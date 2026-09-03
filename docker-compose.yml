@@ -1,9 +1,9 @@
 # ==============================================================================
-# STMS — Docker Compose (Development)
+# STMS — Docker Compose (Full Stack with PostgreSQL & Redis)
 # ==============================================================================
-# Start:  docker-compose up --build
-# Stop:   docker-compose down
-# Reset:  docker-compose down -v  (removes database data)
+# Start:  docker compose up --build
+# Stop:   docker compose down
+# Reset:  docker compose down -v  (removes volume data)
 # ==============================================================================
 
 services:
@@ -14,7 +14,7 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres_secure_pass}
       POSTGRES_DB: ${DB_DATABASE:-stms_db}
     ports:
       - "${DB_PORT:-5432}:5432"
@@ -26,7 +26,22 @@ services:
       timeout: 5s
       retries: 5
 
-  # ---- STMS API Server ----
+  # ---- Redis (Distributed Cache & Rate Limiting) ----
+  redis:
+    image: redis:7-alpine
+    container_name: stms-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ---- STMS Backend API Server ----
   api:
     build:
       context: ./backend
@@ -42,13 +57,16 @@ services:
       - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=${DB_USER:-postgres}
-      - DB_PASSWORD=${DB_PASSWORD:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD:-postgres_secure_pass}
       - DB_DATABASE=${DB_DATABASE:-stms_db}
-      - JWT_SECRET=${JWT_SECRET:-change-me-in-production}
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=${JWT_SECRET:-dev-jwt-secret-not-for-prod-use-32-chars!}
       - API_PORT=8001
-      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5000,http://localhost:3000}
+      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:5000,http://localhost:3000,http://localhost:8001}
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     volumes:
       - ./backend/ai_models:/app/ai_models:ro
@@ -57,4 +75,6 @@ services:
 
 volumes:
   pgdata:
+    driver: local
+  redisdata:
     driver: local

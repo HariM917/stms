@@ -1,5 +1,15 @@
-const AUTH_API_URL = 'http://localhost:3000/api';
-const API_BASE_URL = 'http://localhost:8001/api';
+const API_BASE_URL = window.location.origin + '/api/v1';
+const AUTH_API_URL = window.location.origin + '/api/v1/auth';
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
 
 if (!localStorage.getItem('token')) {
     window.location.href = 'landing.html';

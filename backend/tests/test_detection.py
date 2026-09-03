@@ -16,11 +16,12 @@ def _create_test_image() -> bytes:
 
 
 @pytest.mark.asyncio
-async def test_detect_objects(client):
-    """Object detection endpoint should accept an image and return detections."""
+async def test_detect_objects(client, auth_headers):
+    """Object detection endpoint should accept an image and return detections for authenticated user."""
     image_bytes = _create_test_image()
     response = await client.post(
         "/api/v1/detect/objects",
+        headers=auth_headers,
         files={"file": ("test.png", io.BytesIO(image_bytes), "image/png")},
     )
     assert response.status_code == 200
@@ -33,11 +34,24 @@ async def test_detect_objects(client):
 
 
 @pytest.mark.asyncio
-async def test_detect_traffic_signs(client):
+async def test_detect_objects_unauthenticated(client):
+    """Detection endpoint must reject anonymous requests."""
+    client.cookies.clear()
+    image_bytes = _create_test_image()
+    response = await client.post(
+        "/api/v1/detect/objects",
+        files={"file": ("test.png", io.BytesIO(image_bytes), "image/png")},
+    )
+    assert response.status_code == 401
+
+
+@pytest.mark.asyncio
+async def test_detect_traffic_signs(client, auth_headers):
     """Traffic sign detection endpoint should accept an image."""
     image_bytes = _create_test_image()
     response = await client.post(
         "/api/v1/detect/traffic-signs",
+        headers=auth_headers,
         files={"file": ("test.png", io.BytesIO(image_bytes), "image/png")},
     )
     assert response.status_code == 200
@@ -46,11 +60,12 @@ async def test_detect_traffic_signs(client):
 
 
 @pytest.mark.asyncio
-async def test_detect_potholes(client):
+async def test_detect_potholes(client, auth_headers):
     """Pothole detection endpoint should accept an image."""
     image_bytes = _create_test_image()
     response = await client.post(
         "/api/v1/detect/potholes",
+        headers=auth_headers,
         files={"file": ("test.png", io.BytesIO(image_bytes), "image/png")},
     )
     assert response.status_code == 200
@@ -59,11 +74,12 @@ async def test_detect_potholes(client):
 
 
 @pytest.mark.asyncio
-async def test_detect_weather(client):
+async def test_detect_weather(client, auth_headers):
     """Weather detection endpoint should accept an image and return conditions."""
     image_bytes = _create_test_image()
     response = await client.post(
         "/api/v1/detect/weather",
+        headers=auth_headers,
         files={"file": ("test.png", io.BytesIO(image_bytes), "image/png")},
     )
     assert response.status_code == 200
@@ -74,11 +90,12 @@ async def test_detect_weather(client):
 
 
 @pytest.mark.asyncio
-async def test_detect_railway_crossing(client):
+async def test_detect_railway_crossing(client, auth_headers):
     """Railway crossing detection endpoint should accept an image."""
     image_bytes = _create_test_image()
     response = await client.post(
         "/api/v1/detect/railway-crossing",
+        headers=auth_headers,
         files={"file": ("test.png", io.BytesIO(image_bytes), "image/png")},
     )
     assert response.status_code == 200
@@ -87,11 +104,13 @@ async def test_detect_railway_crossing(client):
 
 
 @pytest.mark.asyncio
-async def test_detect_empty_file(client):
+async def test_detect_empty_file(client, auth_headers):
     """Uploading an empty file should return an error."""
     response = await client.post(
         "/api/v1/detect/objects",
+        headers=auth_headers,
         files={"file": ("empty.png", io.BytesIO(b""), "image/png")},
     )
     # Should get a 400 or 422 error
     assert response.status_code in (400, 422)
+

@@ -54,8 +54,8 @@ async def lifespan(app: FastAPI):
     await init_db()
     logger.info("Database initialized")
 
-    # Seed default admin user if database is empty
-    await _seed_default_user(logger)
+    # Seed bootstrap admin if configured
+    await _bootstrap_admin_if_configured(logger)
 
     # Initialize detectors (heavy — loads ML models)
     detector_service.initialize_all()
@@ -70,23 +70,38 @@ async def lifespan(app: FastAPI):
     logger.info("Database connections closed")
 
 
-async def _seed_default_user(logger):
-    """Create the default demo admin user if no users exist."""
+async def _bootstrap_admin_if_configured(logger):
+    """
+    Create a bootstrap admin user ONLY if explicitly configured via environment variables.
+    Never seeds hardcoded demo admin credentials in production.
+    """
+    settings = get_settings()
+    admin_email = settings.bootstrap_admin_email
+    admin_password = settings.bootstrap_admin_password
+
+    if not admin_email or not admin_password:
+        if settings.is_production:
+            logger.info("No bootstrap administrator configured. Standard production startup.")
+        return
+
     from app.database import get_db_context
     from app.repositories import user_repository
     from app.services.auth_service import hash_password
 
+    if settings.is_production and (len(admin_password) < 12 or admin_password in ("demo123", "password", "admin123", "secret")):
+        raise ValueError("CRITICAL SECURITY ERROR: BOOTSTRAP_ADMIN_PASSWORD must be at least 12 characters and secure in production.")
+
     async with get_db_context() as db:
-        existing = await user_repository.get_user_by_email(db, "demo@example.com")
+        existing = await user_repository.get_user_by_email(db, admin_email)
         if existing is None:
             await user_repository.create_user(
                 db,
-                name="Demo Admin",
-                email="demo@example.com",
-                password_hash=hash_password("demo123"),
+                name="System Administrator",
+                email=admin_email,
+                password_hash=hash_password(admin_password),
                 role="admin",
             )
-            logger.info("Seeded default admin user: demo@example.com / demo123")
+            logger.info("Initialized bootstrap administrator: %s", admin_email)
 
 
 def get_uptime() -> float:
@@ -148,6 +163,15 @@ def create_app() -> FastAPI:
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-XSS-Protection"] = "1; mode=block"
         response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; "
+            "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; "
+            "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com; "
+            "img-src 'self' data: blob:; "
+            "connect-src 'self' http://localhost:* http://127.0.0.1:*; "
+            "frame-ancestors 'none';"
+        )
         if settings.is_production:
             response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
         return response

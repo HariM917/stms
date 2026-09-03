@@ -109,3 +109,57 @@ async def registered_user(client):
 async def auth_headers(registered_user):
     """Provide just the auth headers for convenience."""
     return registered_user["headers"]
+
+
+@pytest_asyncio.fixture
+async def admin_user(client, db_engine):
+    """Create an admin user and return their token and headers."""
+    # Register user
+    email = "admin@example.com"
+    response = await client.post("/api/v1/auth/register", json={
+        "name": "Admin User",
+        "email": email,
+        "password": "adminpassword123",
+    })
+    data = response.json()
+    token = data.get("token")
+
+    # Elevate role in DB
+    from sqlalchemy import update
+    from app.models.db.user import User
+    session_factory = async_sessionmaker(bind=db_engine, class_=AsyncSession, expire_on_commit=False)
+    async with session_factory() as session:
+        await session.execute(update(User).where(User.email == email).values(role="admin"))
+        await session.commit()
+
+    return {
+        "token": token,
+        "headers": {"Authorization": f"Bearer {token}"},
+    }
+
+
+@pytest_asyncio.fixture
+async def operator_user(client, db_engine):
+    """Create an operator user and return their token and headers."""
+    email = "operator@example.com"
+    response = await client.post("/api/v1/auth/register", json={
+        "name": "Operator User",
+        "email": email,
+        "password": "operatorpassword123",
+    })
+    data = response.json()
+    token = data.get("token")
+
+    # Elevate role in DB
+    from sqlalchemy import update
+    from app.models.db.user import User
+    session_factory = async_sessionmaker(bind=db_engine, class_=AsyncSession, expire_on_commit=False)
+    async with session_factory() as session:
+        await session.execute(update(User).where(User.email == email).values(role="operator"))
+        await session.commit()
+
+    return {
+        "token": token,
+        "headers": {"Authorization": f"Bearer {token}"},
+    }
+

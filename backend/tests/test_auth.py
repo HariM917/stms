@@ -141,12 +141,23 @@ async def test_change_password_wrong_current(client, auth_headers):
 
 
 @pytest.mark.asyncio
-async def test_get_users_list(client, registered_user):
-    """Users list endpoint should return registered users."""
-    response = await client.get("/api/v1/auth/users")
-    assert response.status_code == 200
+async def test_get_users_list(client, registered_user, admin_user):
+    """Users list endpoint must require admin authentication."""
+    # Anonymous request must be rejected (cookies cleared)
+    client.cookies.clear()
+    anon_resp = await client.get("/api/v1/auth/users")
+    assert anon_resp.status_code == 401
 
-    data = response.json()
+    # Normal user must be rejected
+    client.cookies.clear()
+    user_resp = await client.get("/api/v1/auth/users", headers=registered_user["headers"])
+    assert user_resp.status_code == 403
+
+    # Admin user must be allowed
+    client.cookies.clear()
+    admin_resp = await client.get("/api/v1/auth/users", headers=admin_user["headers"])
+    assert admin_resp.status_code == 200
+    data = admin_resp.json()
     assert data["success"] is True
     assert data["count"] >= 1
 

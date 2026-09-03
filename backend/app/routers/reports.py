@@ -29,7 +29,7 @@ class CreateReportRequest(BaseModel):
     vehicle_count: Optional[int] = Field(None, ge=0)
     pedestrian_count: Optional[int] = Field(None, ge=0)
     railway_crossing_active: bool = False
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=2000)
 
 
 class ReportResponse(BaseModel):

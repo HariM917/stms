@@ -42,17 +42,21 @@ def create_access_token(
     expires_delta: timedelta | None = None,
 ) -> str:
     """
-    Create a signed JWT access token.
+    Create a signed JWT access token with JTI (session identifier).
 
     Args:
-        data: Payload to encode (must include 'sub' for user identification).
+        data: Payload to encode (must include 'sub'; should include 'jti').
         expires_delta: Custom expiration. Defaults to settings.jwt_expiration_hours.
 
     Returns:
         Encoded JWT string.
     """
+    import uuid
     settings = get_settings()
     to_encode = data.copy()
+
+    if "jti" not in to_encode:
+        to_encode["jti"] = f"sess_{uuid.uuid4().hex}"
 
     if expires_delta is None:
         expires_delta = timedelta(hours=settings.jwt_expiration_hours)

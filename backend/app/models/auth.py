@@ -1,21 +1,23 @@
 """
 Pydantic models for authentication endpoints.
 """
-from pydantic import BaseModel, Field
 from typing import Optional
+from pydantic import BaseModel, Field
+
+EMAIL_PATTERN = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
 
 
 class RegisterRequest(BaseModel):
     """Registration request body."""
     name: str = Field(..., min_length=1, max_length=100)
-    email: str = Field(..., min_length=5, max_length=255)
-    password: str = Field(..., min_length=6, max_length=128)
+    email: str = Field(..., min_length=5, max_length=255, pattern=EMAIL_PATTERN)
+    password: str = Field(..., min_length=8, max_length=128, description="Password must be at least 8 characters")
 
 
 class LoginRequest(BaseModel):
     """Login request body."""
-    email: str = Field(..., min_length=5, max_length=255)
-    password: str = Field(..., min_length=1)
+    email: str = Field(..., min_length=5, max_length=255, pattern=EMAIL_PATTERN)
+    password: str = Field(..., min_length=1, max_length=128)
 
 
 class UserResponse(BaseModel):
@@ -47,10 +49,11 @@ class TokenResponse(BaseModel):
 class ProfileUpdateRequest(BaseModel):
     """Request to update user profile."""
     name: Optional[str] = Field(None, min_length=1, max_length=100)
-    phone: Optional[str] = Field(None, max_length=20)
+    phone: Optional[str] = Field(None, min_length=5, max_length=20)
 
 
 class ChangePasswordRequest(BaseModel):
     """Request to change password."""
-    current_password: str = Field(..., min_length=1)
-    new_password: str = Field(..., min_length=6, max_length=128)
+    current_password: str = Field(..., min_length=1, max_length=128)
+    new_password: str = Field(..., min_length=8, max_length=128, description="New password must be at least 8 characters")
+

@@ -1,0 +1,96 @@
+name: STMS CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test-and-lint:
+    name: Backend Test Suite & Linting
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: stms_test_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install System Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgl1 libglib2.0-0
+
+      - name: Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt
+          pip install pytest pytest-asyncio pytest-cov httpx
+
+      - name: Run Database Migrations (Alembic)
+        working-directory: backend
+        env:
+          ENVIRONMENT: test
+          DB_DRIVER: sqlite
+        run: |
+          python -m alembic heads
+
+      - name: Run Test Suite with Pytest
+        working-directory: backend
+        env:
+          ENVIRONMENT: test
+          DB_DRIVER: sqlite
+          JWT_SECRET: ci-test-secret-at-least-32-chars-long!
+          LOG_LEVEL: WARNING
+        run: |
+          pytest --cov=app --cov-report=term-missing tests/
+
+  docker-build:
+    name: Build & Verify Docker Image
+    runs-on: ubuntu-latest
+    needs: test-and-lint
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: false
+          tags: stms-backend:latest

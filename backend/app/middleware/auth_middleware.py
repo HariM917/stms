@@ -1,53 +1,67 @@
 """
-Authentication middleware — FastAPI dependencies for JWT-based auth.
-
-Usage in routes:
-    from app.middleware.auth_middleware import get_current_user, require_role
-
-    @router.get("/protected")
-    async def protected_route(user: User = Depends(get_current_user)):
-        ...
-
-    @router.delete("/admin-only")
-    async def admin_route(user: User = Depends(require_role("admin"))):
-        ...
+Authentication middleware — FastAPI dependencies for JWT-based auth with session revocation and cookies.
 """
 from typing import Callable
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import get_settings
 from app.database import get_db
 from app.models.db.user import User
+from app.models.db.session import UserSession
 from app.repositories import user_repository
 from app.services.auth_service import decode_access_token
 from app.utils.logging import get_logger
 
 logger = get_logger("auth_middleware")
 
-# HTTP Bearer scheme — extracts token from "Authorization: Bearer <token>"
 _bearer_scheme = HTTPBearer(auto_error=False)
+
+ROLE_LEVELS = {
+    "admin": 30,
+    "operator": 20,
+    "user": 10,
+}
+
+
+def _extract_token(
+    request: Request,
+    credentials: HTTPAuthorizationCredentials | None,
+) -> str | None:
+    """Extract token from Authorization header or HttpOnly cookie."""
+    if credentials and credentials.credentials:
+        return credentials.credentials
+    cookie_token = request.cookies.get("access_token")
+    if cookie_token:
+        return cookie_token
+    # Also check Authorization header directly in case HTTPBearer didn't capture
+    auth_header = request.headers.get("Authorization")
+    if auth_header and auth_header.startswith("Bearer "):
+        return auth_header[7:].strip()
+    return None
 
 
 async def get_current_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> User:
     """
-    FastAPI dependency: extract JWT from Authorization header, decode it,
-    and return the corresponding User from the database.
-
-    Raises HTTPException 401 if token is missing, invalid, or user not found.
+    FastAPI dependency: extract JWT, decode it, verify against active server-side sessions,
+    and return the authenticated User.
     """
-    if credentials is None:
+    token = _extract_token(request, credentials)
+    if not token:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Authentication required",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    payload = decode_access_token(credentials.credentials)
+    payload = decode_access_token(token)
     if payload is None:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -56,7 +70,7 @@ async def get_current_user(
         )
 
     user_id: str | None = payload.get("sub")
-    if user_id is None:
+    if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token payload",
@@ -75,22 +89,48 @@ async def get_current_user(
             detail="Account is deactivated",
         )
 
+    # Session / JTI check for revocation
+    jti: str | None = payload.get("jti")
+    if jti:
+        result = await db.execute(
+            select(UserSession).where(
+                UserSession.id == jti,
+                UserSession.user_id == user.id,
+            )
+        )
+        session = result.scalar_one_or_none()
+        if session is None or session.logout_time is not None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Session has been revoked or logged out",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+        request.state.session_id = jti
+    else:
+        settings = get_settings()
+        if settings.is_production:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Token missing session identifier (jti)",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
     return user
 
 
-def require_role(*roles: str) -> Callable:
+def require_role(*required_roles: str) -> Callable:
     """
-    Factory that returns a FastAPI dependency requiring the current user
-    to have one of the specified roles.
+    Role check supporting role hierarchy (admin > operator > user).
+    """
+    min_required_level = min(ROLE_LEVELS.get(r, 0) for r in required_roles) if required_roles else 0
 
-    Usage:
-        @router.get("/admin", dependencies=[Depends(require_role("admin"))])
-    """
     async def _role_checker(user: User = Depends(get_current_user)) -> User:
-        if user.role not in roles:
+        user_level = ROLE_LEVELS.get(user.role, 0)
+        # Direct match or hierarchical match
+        if user.role not in required_roles and user_level < min_required_level:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Insufficient permissions. Required role(s): {', '.join(roles)}",
+                detail=f"Insufficient permissions. Required role(s): {', '.join(required_roles)}",
             )
         return user
 
@@ -98,27 +138,39 @@ def require_role(*roles: str) -> Callable:
 
 
 async def get_optional_user(
+    request: Request,
     credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme),
     db: AsyncSession = Depends(get_db),
 ) -> User | None:
-    """
-    Like get_current_user, but returns None instead of raising
-    if no token is provided. Useful for routes that behave differently
-    for authenticated vs anonymous users.
-    """
-    if credentials is None:
+    """Like get_current_user, but returns None instead of raising when unauthenticated."""
+    token = _extract_token(request, credentials)
+    if not token:
         return None
 
-    payload = decode_access_token(credentials.credentials)
+    payload = decode_access_token(token)
     if payload is None:
         return None
 
     user_id = payload.get("sub")
-    if user_id is None:
+    if not user_id:
         return None
 
     user = await user_repository.get_user_by_id(db, user_id)
     if user is None or not user.is_active:
         return None
 
+    jti = payload.get("jti")
+    if jti:
+        result = await db.execute(
+            select(UserSession).where(
+                UserSession.id == jti,
+                UserSession.user_id == user.id,
+            )
+        )
+        session = result.scalar_one_or_none()
+        if session is None or session.logout_time is not None:
+            return None
+        request.state.session_id = jti
+
     return user
+

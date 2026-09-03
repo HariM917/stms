@@ -4,9 +4,9 @@
  * for frontend components to use when making API calls
  */
 
-// Base URLs for API services
-export const API_BASE_URL = 'http://localhost:8001/api'; // Point to FastAPI detection server for API calls
-export const DETECTION_API_URL = 'http://localhost:8001/api'; // FastAPI detection server
+// Base URLs for API services (dynamically resolved to current host/port)
+export const API_BASE_URL = (typeof window !== 'undefined' ? window.location.origin : '') + '/api/v1';
+export const DETECTION_API_URL = API_BASE_URL;
 
 // API endpoints
 export const ENDPOINTS = {

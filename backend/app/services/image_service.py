@@ -1,57 +1,137 @@
 """
 Image processing service.
-Handles reading uploaded images and encoding visualizations.
+Handles reading uploaded images and encoding visualizations with strict security controls.
 """
+import base64
+import io
 import cv2
 import numpy as np
-import base64
-from fastapi import UploadFile, HTTPException
+from PIL import Image
+from fastapi import HTTPException, UploadFile, status
 
+from app.config import get_settings
 from app.utils.logging import get_logger
 
 logger = get_logger("image_service")
 
+# Safe MIME signatures
+ALLOWED_MAGIC_SIGNATURES = [
+    (b"\xff\xd8\xff", "image/jpeg"),               # JPEG
+    (b"\x89PNG\r\n\x1a\n", "image/png"),           # PNG
+    (b"RIFF", "image/webp"),                       # WebP (checked further below)
+]
+
+
+def _validate_image_signature(header_bytes: bytes) -> bool:
+    """Validate true image file signature from initial magic bytes."""
+    if len(header_bytes) < 12:
+        return False
+    if header_bytes.startswith(b"\xff\xd8\xff"):
+        return True
+    if header_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
+        return True
+    if header_bytes.startswith(b"RIFF") and header_bytes[8:12] == b"WEBP":
+        return True
+    return False
+
 
 async def read_image_file(file: UploadFile) -> np.ndarray:
     """
-    Read an uploaded image file and convert to OpenCV BGR format.
+    Read an uploaded image file securely and convert to OpenCV BGR format.
 
-    Raises:
-        HTTPException 400: if file is empty or not a valid image format
-        HTTPException 422: if decoding fails
+    Security features:
+    - Streaming chunked read to prevent memory exhaustion (DoS)
+    - Rejection of oversized files with HTTP 413
+    - Magic byte / file signature validation (ignores untrusted client Content-Type)
+    - Image dimension and pixel count bounds (decompression bomb protection)
+    - Safe decoding with malformed image handling (HTTP 422)
     """
-    # Validate content type
-    valid_mime_types = {"image/jpeg", "image/png", "image/jpg", "image/webp"}
-    if file.content_type and file.content_type not in valid_mime_types:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Invalid file format '{file.content_type}'. Accepted: JPG, PNG, WebP.",
-        )
+    settings = get_settings()
+    max_bytes = settings.max_upload_size_bytes
+
+    # 1. Chunked streaming read
+    chunk_size = 64 * 1024  # 64 KB
+    total_size = 0
+    chunks = []
 
     try:
-        contents = await file.read()
-        if not contents:
-            raise HTTPException(status_code=400, detail="Empty file uploaded.")
+        while True:
+            chunk = await file.read(chunk_size)
+            if not chunk:
+                break
+            total_size += len(chunk)
+            if total_size > max_bytes:
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"File size exceeds maximum allowed limit of {max_bytes // (1024 * 1024)}MB.",
+                )
+            chunks.append(chunk)
+    finally:
+        await file.close()
 
-        nparr = np.frombuffer(contents, np.uint8)
-        if nparr.size == 0:
-            raise HTTPException(status_code=400, detail="Invalid image data.")
+    contents = b"".join(chunks)
+    if not contents:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Empty file uploaded.",
+        )
 
-        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-        if img is None:
-            raise HTTPException(
-                status_code=422,
-                detail="Failed to decode image. File may be corrupted or unsupported.",
-            )
+    # 2. Magic byte signature verification
+    if not _validate_image_signature(contents[:16]):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid image format or signature. Allowed formats: JPEG, PNG, WebP.",
+        )
 
-        logger.debug("Image read successfully: shape=%s", img.shape)
-        return img
-
+    # 3. Pillow integrity & dimension verification (decompression bomb defense)
+    try:
+        with Image.open(io.BytesIO(contents)) as pil_img:
+            # Check format is allowed by Pillow
+            if pil_img.format not in ("JPEG", "PNG", "WEBP"):
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"Unsupported image format '{pil_img.format}'. Allowed: JPEG, PNG, WebP.",
+                )
+            w, h = pil_img.size
+            if w > settings.max_image_dimension or h > settings.max_image_dimension:
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"Image dimensions ({w}x{h}) exceed maximum allowed dimension ({settings.max_image_dimension}px).",
+                )
+            if (w * h) > settings.max_image_pixels:
+                raise HTTPException(
+                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    detail=f"Image pixel count ({w * h}) exceeds maximum limit ({settings.max_image_pixels}).",
+                )
+            pil_img.verify()
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Error reading image file: %s", e)
-        raise HTTPException(status_code=422, detail=f"Could not process image: {e}")
+        logger.warning("Pillow image verification failed: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Malformed or corrupted image file.",
+        )
+
+    # 4. Safe OpenCV decoding
+    try:
+        nparr = np.frombuffer(contents, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+        if img is None:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="Failed to decode image data.",
+            )
+        logger.debug("Image decoded successfully: shape=%s, size=%d bytes", img.shape, total_size)
+        return img
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("OpenCV decoding error: %s", e)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Failed to process image file.",
+        )
 
 
 def encode_image_to_base64(image: np.ndarray) -> str:
