@@ -101,17 +101,33 @@ const getNodeColorClass = (density) => {
     return 'bg-density-green';
 };
 
+const escapeHtml = (str) => {
+    if (str == null) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+};
+
 const callGeminiAPI = async (prompt, useGrounding = false) => {
     try {
-        const response = await fetch(`${API_BASE_URL}/insights`, {
+        const token = localStorage.getItem('token') || localStorage.getItem('stms_token');
+        const headers = { 'Content-Type': 'application/json' };
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+        }
+        const response = await fetch(`${API_BASE_URL}/generate/insights`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ prompt, useGrounding })
+            headers,
+            credentials: 'include',
+            body: JSON.stringify({ prompt })
         });
         if (response.ok) {
             const result = await response.json();
             if (result.success && result.insights) {
-                return result.insights.join('\n');
+                return Array.isArray(result.insights) ? result.insights.join('\n') : String(result.insights);
             }
         }
         return "Error: Could not retrieve AI insights from server.";
@@ -680,7 +696,7 @@ const handleIncidentSummary = async (incidentId, button) => {
     
     const container = document.querySelector(`.ai-summary-container[data-incident-id="${incidentId}"]`);
     if (container) {
-        container.innerHTML = `<div class="mt-3 text-xs text-slate-600 bg-slate-100 p-2 rounded-md border-l-4 border-slate-300">${incident.aiSummary}</div>`;
+        container.innerHTML = `<div class="mt-3 text-xs text-slate-600 bg-slate-100 p-2 rounded-md border-l-4 border-slate-300">${escapeHtml(incident.aiSummary)}</div>`;
     }
     button.textContent = '✨ Summary Generated';
 };
@@ -712,7 +728,7 @@ const handleAiAdvisor = async () => {
     - Recent Incidents: ${recentIncidents}`;
     
     const advice = await callGeminiAPI(prompt, true);
-    body.innerHTML = `<div class="prose prose-sm max-w-none">${advice.replace(/\n/g, '<br>')}</div>`;
+    body.innerHTML = `<div class="prose prose-sm max-w-none">${escapeHtml(advice).replace(/\n/g, '<br>')}</div>`;
 };
 
 const updateCharts = () => {
@@ -762,20 +778,22 @@ const mapLocationToNode = (location) => {
 };
 
 const fetchRecentReports = async () => {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem('token') || localStorage.getItem('stms_token');
     if (!token) return;
 
     try {
-        const response = await fetch(`${AUTH_API_URL}/reports/recent`, {
+        const response = await fetch(`${API_BASE_URL}/reports/recent`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
-            }
+            },
+            credentials: 'include'
         });
 
         if (response.ok) {
-            const reports = await response.json();
+            const data = await response.json();
+            const reports = Array.isArray(data) ? data : (data.reports || []);
             let stateChanged = false;
 
             reports.forEach(report => {

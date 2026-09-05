@@ -2,8 +2,9 @@
 Indian Traffic Sign Detector Module for Smart Traffic Management System.
 Detects speed limits, pedestrian crossings, speed humps, stop signs, and traffic control signs.
 """
-from pathlib import Path
 import threading
+from pathlib import Path
+
 import numpy as np
 
 try:
@@ -14,7 +15,6 @@ except ImportError:
     YOLO_AVAILABLE = False
 
 from .base_detector import BaseDetector
-
 
 INDIAN_TRAFFIC_SIGNS = {
     0: "hump",

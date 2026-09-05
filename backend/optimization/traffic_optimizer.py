@@ -2,7 +2,7 @@
 Traffic Signal Timing Optimizer for Indian Road Intersections.
 Calculates dynamic phase allocations, clearance intervals, and pedestrian safety timings.
 """
-from typing import Any, Dict
+from typing import Any
 
 
 class TrafficSignalOptimizer:
@@ -24,9 +24,9 @@ class TrafficSignalOptimizer:
     def optimize_signals(
         self,
         junction_id: str,
-        traffic_data: Dict[str, Any],
-        weather_data: Dict[str, Any] | None = None,
-    ) -> Dict[str, Any]:
+        traffic_data: dict[str, Any],
+        weather_data: dict[str, Any] | None = None,
+    ) -> dict[str, Any]:
         """
         Compute safe, dynamic signal timings based on real-time traffic volume and environmental conditions.
 

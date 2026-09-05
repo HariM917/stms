@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './UsersManagement.css';
 
-const API_BASE_URL = 'http://localhost:8001';
+const API_BASE_URL = (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') + '/api/v1';
 
 /**
  * UsersManagement - A React component for managing users in the STMS system
@@ -31,7 +31,15 @@ function UsersManagement() {
     setError(null);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users`);
+      const token = (typeof localStorage !== 'undefined') ? (localStorage.getItem('token') || localStorage.getItem('stms_token')) : null;
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(`${API_BASE_URL}/auth/users`, {
+        headers,
+        credentials: 'include'
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);

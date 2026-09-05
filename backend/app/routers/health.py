@@ -2,6 +2,7 @@
 Health check router — liveness, readiness, and comprehensive status monitoring.
 """
 from datetime import datetime, timezone
+
 import psutil
 from fastapi import APIRouter, status
 from fastapi.responses import JSONResponse
@@ -49,16 +50,29 @@ async def readiness_probe():
             content={"ready": False, "reason": "Database connection unavailable"},
         )
 
-    # 2. Detector readiness check in production
+    # 2. Redis check if configured
     settings = get_settings()
-    detector_status = detector_service.get_detector_status()
-    if settings.is_production:
-        # At least primary detectors should be operational
-        if not detector_status.get("object", False):
+    if settings.redis_url and settings.is_production:
+        try:
+            import redis.asyncio as aioredis
+            r = aioredis.from_url(settings.redis_url, socket_connect_timeout=2.0)
+            await r.ping()
+            await r.aclose()
+        except Exception as e:
+            logger.warning("Readiness probe Redis check failed: %s", e)
             return JSONResponse(
                 status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-                content={"ready": False, "reason": "Primary detection models not ready"},
+                content={"ready": False, "reason": "Redis connection unavailable"},
             )
+
+    # 3. Detector readiness check in production
+    detector_status = detector_service.get_detector_status()
+    if settings.is_production and not detector_status.get("object", False):
+        # At least primary detectors should be operational
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"ready": False, "reason": "Primary detection models not ready"},
+        )
 
     return {"ready": True, "timestamp": datetime.now(timezone.utc).isoformat()}
 
@@ -88,6 +102,18 @@ async def health_check():
 
     db_status = "connected" if db_connected else "disconnected"
 
+    # Redis check
+    redis_status = "not_configured"
+    if settings.redis_url:
+        try:
+            import redis.asyncio as aioredis
+            r = aioredis.from_url(settings.redis_url, socket_connect_timeout=2.0)
+            await r.ping()
+            await r.aclose()
+            redis_status = "connected"
+        except Exception:
+            redis_status = "disconnected"
+
     # Uptime
     try:
         from app.main import get_uptime
@@ -105,7 +131,7 @@ async def health_check():
     detector_status = detector_service.get_detector_status()
     all_detectors_ok = all(detector_status.values()) if detector_status else False
 
-    if not db_connected:
+    if not db_connected or (settings.is_production and settings.redis_url and redis_status != "connected"):
         overall_status = "unhealthy"
         http_status = status.HTTP_503_SERVICE_UNAVAILABLE
     elif not all_detectors_ok:
@@ -124,6 +150,7 @@ async def health_check():
         "memory_mb": memory_mb,
         "services": {
             "database": db_status,
+            "redis": redis_status,
             "detectors": detector_status,
             "optimization": detector_service.get_optimizer() is not None,
             "insights": detector_service.get_insights_llm() is not None,

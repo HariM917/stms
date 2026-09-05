@@ -2,7 +2,7 @@
 Comprehensive rate limiter middleware.
 Protects auth, detection, optimization, insights, and report endpoints with normalized path keys.
 """
-from typing import Optional, Tuple
+
 from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoint
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
@@ -15,7 +15,7 @@ from app.utils.logging import get_logger
 logger = get_logger("rate_limiter_middleware")
 
 # (prefix, max_requests, window_seconds)
-RATE_LIMIT_RULES: list[Tuple[str, int, int]] = [
+RATE_LIMIT_RULES: list[tuple[str, int, int]] = [
     ("/api/v1/auth/login", 5, 60),
     ("/api/v1/auth/register", 3, 60),
     ("/api/v1/auth/change-password", 3, 60),
@@ -30,13 +30,17 @@ def _normalize_path(path: str) -> str:
     """Normalize legacy unversioned routes (e.g., /api/auth/login -> /api/v1/auth/login)."""
     if path.startswith("/api/v1/"):
         return path
+    if path in ("/api/login", "/login"):
+        return "/api/v1/auth/login"
+    if path in ("/api/register", "/register"):
+        return "/api/v1/auth/register"
     if path.startswith("/api/"):
         # Replace first /api/ with /api/v1/
         return "/api/v1/" + path[5:]
     return path
 
 
-def _find_rule(normalized_path: str) -> Optional[Tuple[str, int, int]]:
+def _find_rule(normalized_path: str) -> tuple[str, int, int] | None:
     """Find the most specific matching rate limit rule."""
     for prefix, max_req, window in RATE_LIMIT_RULES:
         if normalized_path.startswith(prefix):

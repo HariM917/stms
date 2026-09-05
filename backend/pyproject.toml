@@ -20,6 +20,7 @@ dependencies = [
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
     "python-multipart>=0.0.6",
+    "email-validator>=2.0.0",
 
     # --- Authentication ---
     "bcrypt>=4.0.0",
@@ -31,6 +32,10 @@ dependencies = [
     "asyncpg>=0.29.0",
     "alembic>=1.13.0",
     "aiosqlite>=0.19.0",  # SQLite async driver for local dev
+    "psycopg2-binary>=2.9.0",
+
+    # --- Caching & Distributed Limiting ---
+    "redis>=5.0.0",
 
     # --- Computer Vision & ML ---
     "opencv-python-headless>=4.8.0",
@@ -44,6 +49,7 @@ dependencies = [
 
     # --- Utilities ---
     "Pillow>=10.0.0",
+    "psutil>=5.9.0",
 ]
 
 [project.optional-dependencies]
@@ -72,6 +78,7 @@ filterwarnings = [
 target-version = "py310"
 line-length = 120
 src = ["app", "tests"]
+extend-exclude = ["*.ipynb"]
 
 [tool.ruff.lint]
 select = [

@@ -1,4 +1,4 @@
-const API_URL = window.location.origin.includes('localhost:3000') ? '/api' : 'http://localhost:3000/api';
+const API_URL = (typeof window !== 'undefined' ? window.location.origin : '') + '/api/v1/auth';
 
 // --- Page Navigation & UI Elements ---
 const mainContent = document.getElementById('main-content');
@@ -199,6 +199,7 @@ loginForm.addEventListener('submit', async (e) => {
             const response = await fetch(`${API_URL}/login`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ email, password })
             });
             
@@ -277,6 +278,7 @@ registerForm.addEventListener('submit', async (e) => {
             const response = await fetch(`${API_URL}/register`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
                 body: JSON.stringify({ name, email, password })
             });
             

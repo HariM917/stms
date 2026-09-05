@@ -4,10 +4,10 @@ Shared test fixtures for the STMS test suite.
 Uses an in-memory SQLite database and httpx AsyncClient for fast, isolated tests.
 """
 import os
-import pytest
+
 import pytest_asyncio
-from httpx import AsyncClient, ASGITransport
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker, AsyncSession
+from httpx import ASGITransport, AsyncClient
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 
 # Force test settings before importing app modules
 os.environ["ENVIRONMENT"] = "test"
@@ -17,7 +17,6 @@ os.environ["LOG_LEVEL"] = "WARNING"
 
 from app.database import Base, get_db
 from app.main import create_app
-
 
 # ---------------------------------------------------------------------------
 # Database fixtures
@@ -126,6 +125,7 @@ async def admin_user(client, db_engine):
 
     # Elevate role in DB
     from sqlalchemy import update
+
     from app.models.db.user import User
     session_factory = async_sessionmaker(bind=db_engine, class_=AsyncSession, expire_on_commit=False)
     async with session_factory() as session:
@@ -152,6 +152,7 @@ async def operator_user(client, db_engine):
 
     # Elevate role in DB
     from sqlalchemy import update
+
     from app.models.db.user import User
     session_factory = async_sessionmaker(bind=db_engine, class_=AsyncSession, expire_on_commit=False)
     async with session_factory() as session:

@@ -2,7 +2,7 @@
 Detection router — all 5 detection endpoints with authentication and production safety.
 """
 import cv2
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, UploadFile, status
 from fastapi.responses import JSONResponse
 
 from app.middleware.auth_middleware import get_current_user

@@ -1,7 +1,7 @@
 // Example JavaScript code to use the users API
 
 // Define the API base URL - change as needed
-const API_BASE_URL = 'http://localhost:8001';
+const API_BASE_URL = (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') + '/api/v1';
 
 /**
  * Fetch users from the API
@@ -9,8 +9,16 @@ const API_BASE_URL = 'http://localhost:8001';
  */
 async function fetchUsers() {
   try {
+    const token = (typeof localStorage !== 'undefined') ? (localStorage.getItem('token') || localStorage.getItem('stms_token')) : null;
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     // Send a GET request to the backend's API endpoint
-    const response = await fetch(`${API_BASE_URL}/api/users`);
+    const response = await fetch(`${API_BASE_URL}/auth/users`, {
+      headers,
+      credentials: 'include'
+    });
 
     // Check if the response was successful (status code 200-299)
     if (!response.ok) {

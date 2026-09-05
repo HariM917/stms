@@ -4,16 +4,16 @@ Uses a singleton pattern so detectors are loaded once at startup.
 """
 import sys
 from pathlib import Path
-from typing import Dict, Any, Optional
+from typing import Any
 
 from app.utils.logging import get_logger
 
 logger = get_logger("detector_service")
 
 # Module-level state
-_detectors: Dict[str, Any] = {}
-_optimizer: Optional[Any] = None
-_insights_llm: Optional[Any] = None
+_detectors: dict[str, Any] = {}
+_optimizer: Any | None = None
+_insights_llm: Any | None = None
 
 
 # ---------------------------------------------------------------------------

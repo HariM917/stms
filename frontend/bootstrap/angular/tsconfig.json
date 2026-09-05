@@ -18,7 +18,9 @@
     "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "typeRoots": ["./node_modules/@types"],
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true
   },
+  "include": ["**/*.ts"],
   "exclude": ["node_modules", "**/*.spec.ts"]
 }

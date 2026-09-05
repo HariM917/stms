@@ -1,19 +1,18 @@
 """
 Wrapper script to train and integrate the Indian Traffic Sign Detection model
 """
-import os
-import sys
-import subprocess
 import argparse
+import subprocess
 from pathlib import Path
+
 
 def run_command(command, description):
     """Run a command and print its output"""
     print(f"\n{description}...")
     print(f"Running: {command}")
     process = subprocess.Popen(
-        command, 
-        shell=True, 
+        command,
+        shell=True,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
@@ -25,7 +24,7 @@ def run_command(command, description):
         line = line.strip()
         if line:
             print(line)
-    
+
     process.wait()
     return process.returncode
 
@@ -33,7 +32,7 @@ def main():
     parser = argparse.ArgumentParser(description="Train and integrate Indian Traffic Sign Detection model")
     parser.add_argument("--model-size", type=str, default="n", choices=["n", "s", "m", "l", "x"],
                       help="YOLOv8 model size (n=nano, s=small, m=medium, l=large, x=xlarge)")
-    parser.add_argument("--epochs", type=int, default=20, 
+    parser.add_argument("--epochs", type=int, default=20,
                       help="Number of training epochs (default: 20)")
     parser.add_argument("--batch-size", type=int, default=8,
                       help="Training batch size (default: 8)")
@@ -77,8 +76,8 @@ def main():
 
     # 4. Verify the detector
     verify_cmd = (
-        f"python -c \"from backend.detectors.traffic_sign_detector import TrafficSignDetector; "
-        f"detector = TrafficSignDetector(); print('TrafficSignDetector initialized successfully');\""
+        "python -c \"from backend.detectors.traffic_sign_detector import TrafficSignDetector; "
+        "detector = TrafficSignDetector(); print('TrafficSignDetector initialized successfully');\""
     )
     run_command(verify_cmd, "Verifying the TrafficSignDetector class")
 

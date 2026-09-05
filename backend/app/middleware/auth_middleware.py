@@ -1,7 +1,7 @@
 """
 Authentication middleware — FastAPI dependencies for JWT-based auth with session revocation and cookies.
 """
-from typing import Callable
+from collections.abc import Callable
 
 from fastapi import Depends, HTTPException, Request, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -10,8 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import get_settings
 from app.database import get_db
-from app.models.db.user import User
 from app.models.db.session import UserSession
+from app.models.db.user import User
 from app.repositories import user_repository
 from app.services.auth_service import decode_access_token
 from app.utils.logging import get_logger

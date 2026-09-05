@@ -4,20 +4,20 @@ Entry point for the production-ready API server.
 """
 import sys
 import time
-from pathlib import Path
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import get_settings
-from app.database import init_db, close_db
-from app.utils.logging import setup_logging, get_logger
-from app.services import detector_service
-from app.middleware.request_id import RequestIDMiddleware
-from app.middleware.rate_limiter import RateLimiterMiddleware
+from app.database import close_db, init_db
 from app.middleware.error_handlers import register_error_handlers
-from app.routers import health, auth, detection, optimization, insights, reports
+from app.middleware.rate_limiter import RateLimiterMiddleware
+from app.middleware.request_id import RequestIDMiddleware
+from app.routers import auth, detection, health, insights, optimization, reports
+from app.services import detector_service
+from app.utils.logging import get_logger, setup_logging
 
 # Ensure project root is on the path for detector imports
 ROOT_DIR = Path(__file__).resolve().parent.parent
@@ -40,7 +40,7 @@ async def lifespan(app: FastAPI):
     _start_time = time.time()
 
     # ---- Startup ----
-    app_logger = setup_logging()
+    setup_logging()
     logger = get_logger("main")
     settings = get_settings()
 
@@ -222,6 +222,7 @@ app = create_app()
 # ---- CLI entry point ----
 if __name__ == "__main__":
     import argparse
+
     import uvicorn
 
     parser = argparse.ArgumentParser(description="Run the STMS API server")

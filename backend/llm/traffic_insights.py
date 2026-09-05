@@ -3,7 +3,7 @@ Traffic Insights Intelligence Module.
 Generates analytical assessments, congestion forecasts, and signal management recommendations.
 Clearly delineates AI analytical advisory from real-world emergency dispatch actions.
 """
-from typing import Any, Dict, List
+from typing import Any
 
 
 class TrafficInsightsLLM:
@@ -15,16 +15,16 @@ class TrafficInsightsLLM:
 
     def get_insights(
         self,
-        traffic_data: Dict[str, Any] | None = None,
-        weather_data: Dict[str, Any] | None = None,
+        traffic_data: dict[str, Any] | None = None,
+        weather_data: dict[str, Any] | None = None,
         time_range: str = "current",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Generate structured analytical insights from intersection telemetry."""
         traffic_data = traffic_data or {}
         weather_data = weather_data or {}
 
-        insights: List[str] = []
-        recommendations: List[str] = []
+        insights: list[str] = []
+        recommendations: list[str] = []
 
         vehicle_count = int(traffic_data.get("vehicle_count", 0))
         pedestrian_count = int(traffic_data.get("pedestrian_count", 0))
@@ -59,7 +59,7 @@ class TrafficInsightsLLM:
             "disclaimer": "AI Advisory: Recommendations require operator confirmation before physical actuation.",
         }
 
-    def generate_insights(self, prompt: str) -> List[str]:
+    def generate_insights(self, prompt: str) -> list[str]:
         """Analyze operator prompt and return structured bulleted advisory."""
         prompt_lower = prompt.lower()
         insights = []

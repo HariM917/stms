@@ -132,7 +132,16 @@ export default {
       this.error = null;
       
       try {
-        const response = await fetch('http://localhost:8001/api/users');
+        const token = (typeof localStorage !== 'undefined') ? (localStorage.getItem('token') || localStorage.getItem('stms_token')) : null;
+        const headers = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        const apiBase = (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') + '/api/v1';
+        const response = await fetch(`${apiBase}/auth/users`, {
+          headers,
+          credentials: 'include'
+        });
         
         if (!response.ok) {
           throw new Error(`HTTP error! Status: ${response.status}`);

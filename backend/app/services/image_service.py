@@ -4,10 +4,11 @@ Handles reading uploaded images and encoding visualizations with strict security
 """
 import base64
 import io
+
 import cv2
 import numpy as np
-from PIL import Image
 from fastapi import HTTPException, UploadFile, status
+from PIL import Image
 
 from app.config import get_settings
 from app.utils.logging import get_logger
@@ -26,13 +27,14 @@ def _validate_image_signature(header_bytes: bytes) -> bool:
     """Validate true image file signature from initial magic bytes."""
     if len(header_bytes) < 12:
         return False
-    if header_bytes.startswith(b"\xff\xd8\xff"):
-        return True
-    if header_bytes.startswith(b"\x89PNG\r\n\x1a\n"):
-        return True
-    if header_bytes.startswith(b"RIFF") and header_bytes[8:12] == b"WEBP":
-        return True
-    return False
+    return (
+        header_bytes.startswith(b"\xff\xd8\xff")
+        or header_bytes.startswith(b"\x89PNG\r\n\x1a\n")
+        or (header_bytes.startswith(b"RIFF") and header_bytes[8:12] == b"WEBP")
+    )
+
+
+HTTP_413_PAYLOAD_TOO_LARGE: int = getattr(status, "HTTP_413_CONTENT_TOO_LARGE", 413)
 
 
 async def read_image_file(file: UploadFile) -> np.ndarray:
@@ -62,7 +64,7 @@ async def read_image_file(file: UploadFile) -> np.ndarray:
             total_size += len(chunk)
             if total_size > max_bytes:
                 raise HTTPException(
-                    status_code=status.HTTP_413_REQUEST_ENTITY_TOO_LARGE,
+                    status_code=HTTP_413_PAYLOAD_TOO_LARGE,
                     detail=f"File size exceeds maximum allowed limit of {max_bytes // (1024 * 1024)}MB.",
                 )
             chunks.append(chunk)
@@ -111,7 +113,7 @@ async def read_image_file(file: UploadFile) -> np.ndarray:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Malformed or corrupted image file.",
-        )
+        ) from e
 
     # 4. Safe OpenCV decoding
     try:
@@ -131,7 +133,7 @@ async def read_image_file(file: UploadFile) -> np.ndarray:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Failed to process image file.",
-        )
+        ) from e
 
 
 def encode_image_to_base64(image: np.ndarray) -> str:

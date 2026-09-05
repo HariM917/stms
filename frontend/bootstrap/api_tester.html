@@ -105,7 +105,7 @@
 
     <script>
         // Base URL for API endpoints
-        const BASE_URL = ""; // Empty means relative to current host
+        const BASE_URL = (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') + '/api/v1';
         
         // Preview selected image
         const imageInput = document.getElementById('image-input');
@@ -142,14 +142,27 @@
             const formData = new FormData();
             formData.append('file', file);
             
+            const token = localStorage.getItem('token') || localStorage.getItem('stms_token');
+            const headers = {};
+            if (token) {
+                headers['Authorization'] = `Bearer ${token}`;
+            }
+
             // Make API request
-            fetch(`${BASE_URL}/api/detect/${endpoint}`, {
+            fetch(`${BASE_URL}/detect/${endpoint}`, {
                 method: 'POST',
+                headers: headers,
+                credentials: 'include',
                 body: formData
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error(`HTTP error! Status: ${response.status}`);
+                    return response.json().then(data => {
+                        throw new Error(data.detail || data.message || `HTTP error! Status: ${response.status}`);
+                    }).catch(e => {
+                        if (e.message) throw e;
+                        throw new Error(`HTTP error! Status: ${response.status}`);
+                    });
                 }
                 return response.json();
             })
@@ -179,11 +192,11 @@
         });
         
         document.getElementById('test-traffic-signs').addEventListener('click', () => {
-            testEndpoint('traffic_signs', 'traffic-signs-result');
+            testEndpoint('traffic-signs', 'traffic-signs-result');
         });
         
         document.getElementById('test-railway-crossing').addEventListener('click', () => {
-            testEndpoint('railway_crossing', 'railway-crossing-result');
+            testEndpoint('railway-crossing', 'railway-crossing-result');
         });
     </script>
 </body>

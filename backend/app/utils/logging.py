@@ -8,7 +8,6 @@ Features:
 import logging
 import re
 import sys
-from pathlib import Path
 
 from app.config import get_settings
 

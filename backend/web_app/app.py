@@ -3,11 +3,10 @@
 AI Prediction Web Application for Smart Traffic Management System
 '''
 
+import base64
 import os
 import sys
-import time
 import uuid
-import base64
 from io import BytesIO
 
 # Add parent directory to path so we can import from the backend modules
@@ -31,10 +30,9 @@ for package in ['numpy', 'opencv-python', 'pillow', 'flask']:
 
 # Now import the packages
 try:
-    import numpy as np
     import cv2
+    from flask import Flask, flash, redirect, render_template, request, send_from_directory, url_for
     from PIL import Image
-    from flask import Flask, request, render_template, redirect, url_for, flash, jsonify, send_from_directory
 except ImportError as e:
     print(f"Error importing required packages even after installation: {e}")
     print("Please run 'python setup_vscode.py' to configure your environment.")
@@ -73,13 +71,13 @@ if YOLO_IMPORTED:
             os.path.join(parent_dir, 'yolov8n.pt'),
             os.path.join(parent_dir, 'models', 'yolov8n.pt')
         ]
-        
+
         for path in yolo_paths:
             if os.path.exists(path):
                 model = YOLO(path)
                 print(f"YOLO model loaded from {path}")
                 break
-        
+
         if model is None:
             print("Warning: YOLO model weights not found in expected locations.")
     except Exception as e:
@@ -96,44 +94,41 @@ def upload_file():
     if 'file' not in request.files:
         flash('No file part')
         return redirect(request.url)
-    
+
     file = request.files['file']
-    
+
     if file.filename == '':
         flash('No selected file')
         return redirect(request.url)
-    
+
     if file:
         # Save the uploaded file
         filename = str(uuid.uuid4()) + os.path.splitext(file.filename)[1]
         filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         file.save(filepath)
-        
+
         # Process the image if model is available
         if model:
             try:
                 results = model(filepath)
-                
+
                 # Convert result to Base64 for display
                 img = cv2.imread(filepath)
                 for r in results:
                     img = r.plot()
-                
+
                 # Convert to PIL Image and then to base64
                 img_pil = Image.fromarray(img)
                 buffered = BytesIO()
                 img_pil.save(buffered, format="JPEG")
                 img_str = base64.b64encode(buffered.getvalue()).decode('utf-8')
-                
+
                 # Extract detection results
                 detections = []
                 for r in results:
-                    for i, (box, conf, cls) in enumerate(zip(r.boxes.xyxy, r.boxes.conf, r.boxes.cls)):
-                        if r.names:
-                            label = r.names[int(cls)]
-                        else:
-                            label = f"Class {int(cls)}"
-                        
+                    for box, conf, cls in zip(r.boxes.xyxy, r.boxes.conf, r.boxes.cls, strict=False):
+                        label = r.names[int(cls)] if r.names else f"Class {int(cls)}"
+
                         detections.append({
                             'label': label,
                             'confidence': float(conf),
@@ -144,9 +139,9 @@ def upload_file():
                                 'y2': float(box[3])
                             }
                         })
-                
-                return render_template('result.html', 
-                                     image_b64=img_str, 
+
+                return render_template('result.html',
+                                     image_b64=img_str,
                                      detections=detections,
                                      filename=filename)
             except Exception as e:

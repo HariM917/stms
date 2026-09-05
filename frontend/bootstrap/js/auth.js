@@ -1,9 +1,9 @@
 // Authentication JS functions
 
-// API URL - update this to the correct API URL when deployed
-// The full path including /api should be used
-const API_URL = '/api';  // Prepend /api to match backend structure
-console.log('API_URL initialized:', API_URL);
+// API Base URL - versioned API
+const API_BASE_URL = (typeof window !== 'undefined' ? window.location.origin : '') + '/api/v1';
+const API_URL = API_BASE_URL;
+console.log('API_BASE_URL initialized:', API_BASE_URL);
 
 // DOM Elements
 // We'll get these elements inside functions instead of globally
@@ -167,19 +167,15 @@ function getCurrentUser() {
 
 async function authenticatedFetch(url, options = {}) {
     const token = getToken();
-    if (!token) {
-        throw new Error('Not authenticated');
+    const headers = { ...options.headers };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
     }
-    
-    const headers = options.headers || {};
-    const newHeaders = {
-        ...headers,
-        'Authorization': `Bearer ${token}`
-    };
     
     const response = await fetch(url, {
         ...options,
-        headers: newHeaders
+        headers,
+        credentials: 'include'
     });
     
     if (response.status === 401 || response.status === 403) {
@@ -191,11 +187,22 @@ async function authenticatedFetch(url, options = {}) {
 }
 
 function logout() {
+    const token = getToken();
+    if (token) {
+        fetch(`${API_BASE_URL}/auth/logout`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            credentials: 'include'
+        }).catch(err => console.warn('Server logout error:', err));
+    }
     clearToken();
     clearUser();
     
     // Redirect to login page
-    window.location.href = '/login.html';
+    window.location.href = 'login.html';
 }
 
 // Setup functions
@@ -263,13 +270,14 @@ function setupLoginForm() {
         try {
             setButtonLoading('login-btn', true);
             
-            console.log('Sending login request to:', `/api/login`);
+            console.log('Sending login request to:', `${API_BASE_URL}/auth/login`);
             
-            const response = await fetch(`/api/login`, {
+            const response = await fetch(`${API_BASE_URL}/auth/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({ email, password })
             });
             
@@ -279,7 +287,7 @@ function setupLoginForm() {
             console.log('Login response data:', data);
             
             if (!response.ok) {
-                throw new Error(data.message || 'Login failed');
+                throw new Error(data.message || data.detail || 'Login failed');
             }
             
             // Store token and user data
@@ -287,7 +295,7 @@ function setupLoginForm() {
             setUser(data.user);
             
             // Redirect to dashboard
-            window.location.href = '/dashboard.html';
+            window.location.href = 'dashboard.html';
         } catch (error) {
             console.error('Login error:', error);
             showError(error.message || 'Failed to login. Please check your credentials and try again.');
@@ -344,14 +352,14 @@ function setupRegisterForm() {
         try {
             setButtonLoading('register-btn', true);
             
-            // FIX: Changed from /api/auth/register to /api/register
-            console.log('Sending register request to:', `/api/register`);
+            console.log('Sending register request to:', `${API_BASE_URL}/auth/register`);
             
-            const response = await fetch(`/api/register`, {
+            const response = await fetch(`${API_BASE_URL}/auth/register`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
+                credentials: 'include',
                 body: JSON.stringify({ name, email, password })
             });
             
@@ -361,7 +369,7 @@ function setupRegisterForm() {
             console.log('Register response data:', data);
             
             if (!response.ok) {
-                throw new Error(data.message || 'Registration failed');
+                throw new Error(data.message || data.detail || 'Registration failed');
             }
             
             // Show success message
@@ -369,7 +377,7 @@ function setupRegisterForm() {
             
             // Redirect after a brief delay to show the success message
             setTimeout(() => {
-                window.location.href = '/login.html';
+                window.location.href = 'login.html';
             }, 2000);
         } catch (error) {
             console.error('Registration error:', error);
@@ -396,17 +404,17 @@ function checkAuthState() {
     // If on login or register page and already logged in, redirect to home
     if (token && (currentPath.includes('login.html') || currentPath.includes('register.html'))) {
         console.log('Already logged in, redirecting to dashboard');
-        window.location.href = '/dashboard.html';
+        window.location.href = 'dashboard.html';
         return;
     }
     
     // If on protected page and not logged in, redirect to login
-    const protectedPages = ['/dashboard.html', '/profile.html'];
+    const protectedPages = ['dashboard.html', 'profile.html'];
     const isProtectedPage = protectedPages.some(page => currentPath.includes(page));
     
     if (!token && isProtectedPage) {
         console.log('Not logged in, redirecting to login');
-        window.location.href = '/login.html';
+        window.location.href = 'login.html';
         return;
     }
 }

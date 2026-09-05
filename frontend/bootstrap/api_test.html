@@ -117,11 +117,10 @@
     </div>
 
     <script>
-        // API URLs
-        const AUTH_API_URL = "http://localhost:3000";
-        const BACKEND_API_URL = "http://localhost:8001";
+        // API Base URL
+        const API_BASE_URL = (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') + '/api/v1';
         
-        let authToken = localStorage.getItem('authToken');
+        let authToken = localStorage.getItem('authToken') || localStorage.getItem('stms_token');
         
         // Register User
         async function registerUser() {
@@ -134,12 +133,13 @@
             resultElement.className = "result";
             
             try {
-                const response = await fetch(`${AUTH_API_URL}/api/register`, {
+                const response = await fetch(`${API_BASE_URL}/auth/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, email, password })
+                    credentials: 'include',
+                    body: JSON.stringify({ name: username, email, password })
                 });
                 
                 const data = await response.json();
@@ -148,7 +148,7 @@
                     resultElement.innerHTML = `Success! User ${username} registered.`;
                     resultElement.className = "result success";
                 } else {
-                    resultElement.innerHTML = `Error: ${data.message || 'Registration failed'}`;
+                    resultElement.innerHTML = `Error: ${data.detail || data.message || 'Registration failed'}`;
                     resultElement.className = "result error";
                 }
             } catch (error) {
@@ -168,12 +168,13 @@
             resultElement.className = "result";
             
             try {
-                const response = await fetch(`${AUTH_API_URL}/api/login`, {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ username, password })
+                    credentials: 'include',
+                    body: JSON.stringify({ email: username, password })
                 });
                 
                 const data = await response.json();
@@ -181,10 +182,11 @@
                 if (response.ok) {
                     authToken = data.token;
                     localStorage.setItem('authToken', authToken);
-                    resultElement.innerHTML = `Success! Logged in as ${username}. Token: ${authToken.substring(0, 20)}...`;
+                    localStorage.setItem('stms_token', authToken);
+                    resultElement.innerHTML = `Success! Logged in. Token: ${authToken.substring(0, 20)}...`;
                     resultElement.className = "result success";
                 } else {
-                    resultElement.innerHTML = `Error: ${data.message || 'Login failed'}`;
+                    resultElement.innerHTML = `Error: ${data.detail || data.message || 'Login failed'}`;
                     resultElement.className = "result error";
                 }
             } catch (error) {
@@ -208,7 +210,7 @@
             
             const file = fileInput.files[0];
             const formData = new FormData();
-            formData.append('image', file);
+            formData.append('file', file);
             
             resultElement.innerHTML = "Processing image...";
             resultElement.className = "result";
@@ -220,9 +222,10 @@
                     headers['Authorization'] = `Bearer ${authToken}`;
                 }
                 
-                const response = await fetch(`${BACKEND_API_URL}/api/detect/objects`, {
+                const response = await fetch(`${API_BASE_URL}/detect/objects`, {
                     method: 'POST',
                     headers: headers,
+                    credentials: 'include',
                     body: formData
                 });
                 
@@ -241,7 +244,7 @@
                     }
                     resultElement.className = "result success";
                 } else {
-                    resultElement.innerHTML = `Error: ${data.message || 'Detection failed'}`;
+                    resultElement.innerHTML = `Error: ${data.detail || data.message || 'Detection failed'}`;
                     resultElement.className = "result error";
                 }
             } catch (error) {
@@ -265,7 +268,7 @@
             
             const file = fileInput.files[0];
             const formData = new FormData();
-            formData.append('image', file);
+            formData.append('file', file);
             
             resultElement.innerHTML = "Processing image...";
             resultElement.className = "result";
@@ -277,9 +280,10 @@
                     headers['Authorization'] = `Bearer ${authToken}`;
                 }
                 
-                const response = await fetch(`${BACKEND_API_URL}/api/detect/traffic_signs`, {
+                const response = await fetch(`${API_BASE_URL}/detect/traffic-signs`, {
                     method: 'POST',
                     headers: headers,
+                    credentials: 'include',
                     body: formData
                 });
                 
@@ -298,7 +302,7 @@
                     }
                     resultElement.className = "result success";
                 } else {
-                    resultElement.innerHTML = `Error: ${data.message || 'Detection failed'}`;
+                    resultElement.innerHTML = `Error: ${data.detail || data.message || 'Detection failed'}`;
                     resultElement.className = "result error";
                 }
             } catch (error) {
@@ -315,8 +319,8 @@
             resultElement.className = "result";
             
             const services = [
-                { name: "Authentication Server", url: `${AUTH_API_URL}/api/health` },
-                { name: "Backend API Server", url: `${BACKEND_API_URL}/docs` }
+                { name: "Backend API Server", url: `/api/health` },
+                { name: "API Documentation", url: `/docs` }
             ];
             
             let statusHTML = "";

@@ -44,10 +44,12 @@ function getCurrentUser() {
 // ---- Authenticated Fetch ----
 async function authFetch(url, options = {}) {
     const token = getToken();
-    if (!token) throw new Error('Not authenticated');
+    const headers = { ...options.headers };
+    if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
 
-    const headers = { ...options.headers, 'Authorization': `Bearer ${token}` };
-    const response = await fetch(url, { ...options, headers });
+    const response = await fetch(url, { ...options, headers, credentials: 'include' });
 
     if (response.status === 401 || response.status === 403) {
         logout();
@@ -61,6 +63,7 @@ async function login(email, password) {
     const response = await fetch(`${API_BASE}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password }),
     });
     const data = await response.json();
@@ -79,6 +82,7 @@ async function register(name, email, password) {
     const response = await fetch(`${API_BASE}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ name, email, password }),
     });
     const data = await response.json();
@@ -98,6 +102,7 @@ function logout() {
         fetch(`${API_BASE}/auth/logout`, {
             method: 'POST',
             headers: { 'Authorization': `Bearer ${token}` },
+            credentials: 'include',
         }).catch(() => {});
     }
     clearToken();

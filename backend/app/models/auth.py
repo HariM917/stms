@@ -1,7 +1,7 @@
 """
 Pydantic models for authentication endpoints.
 """
-from typing import Optional
+
 from pydantic import BaseModel, Field
 
 EMAIL_PATTERN = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
@@ -26,17 +26,17 @@ class UserResponse(BaseModel):
     name: str
     email: str
     role: str = "user"
-    phone: Optional[str] = None
-    avatar_url: Optional[str] = None
-    created_at: Optional[str] = None
+    phone: str | None = None
+    avatar_url: str | None = None
+    created_at: str | None = None
 
 
 class AuthResponse(BaseModel):
     """Response for login/register containing token and user."""
     success: bool
     message: str
-    token: Optional[str] = None
-    user: Optional[UserResponse] = None
+    token: str | None = None
+    user: UserResponse | None = None
 
 
 class TokenResponse(BaseModel):
@@ -48,8 +48,8 @@ class TokenResponse(BaseModel):
 
 class ProfileUpdateRequest(BaseModel):
     """Request to update user profile."""
-    name: Optional[str] = Field(None, min_length=1, max_length=100)
-    phone: Optional[str] = Field(None, min_length=5, max_length=20)
+    name: str | None = Field(None, min_length=1, max_length=100)
+    phone: str | None = Field(None, min_length=5, max_length=20)
 
 
 class ChangePasswordRequest(BaseModel):

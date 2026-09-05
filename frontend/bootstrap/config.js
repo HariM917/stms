@@ -8,14 +8,26 @@
 export const API_BASE_URL = (typeof window !== 'undefined' ? window.location.origin : '') + '/api/v1';
 export const DETECTION_API_URL = API_BASE_URL;
 
-// API endpoints
+// Helper to construct full API URL safely without duplicate /api/v1
+export function getApiUrl(endpoint) {
+    if (!endpoint) return API_BASE_URL;
+    if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) return endpoint;
+    const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+    if (cleanEndpoint.startsWith('/api/v1/')) return (typeof window !== 'undefined' ? window.location.origin : '') + cleanEndpoint;
+    return `${API_BASE_URL}${cleanEndpoint}`;
+}
+
+// API endpoints (relative to API_BASE_URL)
 export const ENDPOINTS = {
     // Auth endpoints
     AUTH: {
-        LOGIN: '/api/login',
-        REGISTER: '/api/register',
-        PROFILE: '/api/profile',
-        LOGOUT: '/api/logout'
+        LOGIN: '/auth/login',
+        REGISTER: '/auth/register',
+        PROFILE: '/auth/profile',
+        LOGOUT: '/auth/logout',
+        USERS: '/auth/users',
+        CHANGE_PASSWORD: '/auth/change-password',
+        ACCOUNT: '/auth/account'
     },
     
     // Detection endpoints
@@ -29,9 +41,15 @@ export const ENDPOINTS = {
     
     // Analytics endpoints
     ANALYTICS: {
-        INSIGHTS: '/insights/generate',
+        INSIGHTS: '/generate/insights',
         OPTIMIZE: '/optimize/signals',
         STATS: '/analytics/stats'
+    },
+
+    // Reports endpoints
+    REPORTS: {
+        BASE: '/reports',
+        RECENT: '/reports/recent'
     }
 };
 

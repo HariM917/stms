@@ -6,12 +6,12 @@
 class STMSUsersAPI {
   /**
    * Initialize the API client
-   * @param {string} baseUrl - Base URL of the API (default: http://localhost:8001)
+   * @param {string} baseUrl - Base URL of the API (default: /api/v1)
    */
-  constructor(baseUrl = 'http://localhost:8001') {
-    this.baseUrl = baseUrl;
+  constructor(baseUrl = (typeof window !== 'undefined' && window.location.origin ? window.location.origin + '/api/v1' : '/api/v1')) {
+    this.baseUrl = baseUrl.replace(/\/+$/, '');
     this.endpoints = {
-      users: `${this.baseUrl}/api/users`
+      users: `${this.baseUrl}/auth/users`
     };
   }
 
@@ -21,7 +21,15 @@ class STMSUsersAPI {
    */
   async getUsers() {
     try {
-      const response = await fetch(this.endpoints.users);
+      const token = (typeof localStorage !== 'undefined') ? (localStorage.getItem('token') || localStorage.getItem('stms_token')) : null;
+      const headers = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      const response = await fetch(this.endpoints.users, {
+        headers,
+        credentials: 'include'
+      });
       
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);

@@ -1,11 +1,10 @@
 """
 Rate limiter abstraction supporting in-memory sliding window and Redis-backed storage.
 """
-from abc import ABC, abstractmethod
-from collections import defaultdict
 import threading
 import time
-from typing import Optional, Tuple
+from abc import ABC, abstractmethod
+from collections import defaultdict
 
 from app.config import get_settings
 from app.utils.logging import get_logger
@@ -17,7 +16,7 @@ class BaseRateLimiter(ABC):
     """Abstract interface for rate limiting backends."""
 
     @abstractmethod
-    async def is_rate_limited(self, key: str, max_requests: int, window_seconds: int) -> Tuple[bool, int]:
+    async def is_rate_limited(self, key: str, max_requests: int, window_seconds: int) -> tuple[bool, int]:
         """
         Check if an operation is rate limited.
 
@@ -40,7 +39,7 @@ class InMemoryRateLimiter(BaseRateLimiter):
         self._lock = threading.Lock()
         self._last_cleanup = time.time()
 
-    async def is_rate_limited(self, key: str, max_requests: int, window_seconds: int) -> Tuple[bool, int]:
+    async def is_rate_limited(self, key: str, max_requests: int, window_seconds: int) -> tuple[bool, int]:
         now = time.time()
 
         with self._lock:
@@ -94,7 +93,32 @@ class RedisRateLimiter(BaseRateLimiter):
             logger.warning("Could not connect to Redis (%s), falling back to in-memory rate limiter: %s", self.redis_url, e)
             self._redis = None
 
-    async def is_rate_limited(self, key: str, max_requests: int, window_seconds: int) -> Tuple[bool, int]:
+        self._lua_script = """
+        local key = KEYS[1]
+        local now = tonumber(ARGV[1])
+        local cutoff = tonumber(ARGV[2])
+        local max_requests = tonumber(ARGV[3])
+        local window = tonumber(ARGV[4])
+
+        redis.call('ZREMRANGEBYSCORE', key, 0, cutoff)
+        local count = redis.call('ZCARD', key)
+
+        if count >= max_requests then
+            local oldest = redis.call('ZRANGE', key, 0, 0, 'WITHSCORES')
+            local retry_after = window
+            if oldest and #oldest >= 2 then
+                local oldest_time = tonumber(oldest[2])
+                retry_after = math.max(1, math.ceil(window - (now - oldest_time)))
+            end
+            return {1, retry_after}
+        else
+            redis.call('ZADD', key, now, tostring(now))
+            redis.call('EXPIRE', key, window + 1)
+            return {0, 0}
+        end
+        """
+
+    async def is_rate_limited(self, key: str, max_requests: int, window_seconds: int) -> tuple[bool, int]:
         if self._redis is None:
             return await self._fallback.is_rate_limited(key, max_requests, window_seconds)
 
@@ -103,35 +127,24 @@ class RedisRateLimiter(BaseRateLimiter):
         cutoff = now - window_seconds
 
         try:
-            pipe = self._redis.pipeline()
-            # Remove old elements
-            pipe.zremrangebyscore(redis_key, 0, cutoff)
-            # Count elements in current window
-            pipe.zcard(redis_key)
-            # Add current element
-            pipe.zadd(redis_key, {str(now): now})
-            # Set key expiry
-            pipe.expire(redis_key, window_seconds + 1)
-            results = await pipe.execute()
-
-            current_count = results[1]
-            if current_count >= max_requests:
-                # Rate limit exceeded
-                oldest_elements = await self._redis.zrange(redis_key, 0, 0, withscores=True)
-                if oldest_elements:
-                    oldest_time = oldest_elements[0][1]
-                    retry_after = max(1, int(window_seconds - (now - oldest_time)))
-                else:
-                    retry_after = window_seconds
-                return True, retry_after
-
-            return False, 0
+            res = await self._redis.eval(
+                self._lua_script,
+                1,
+                redis_key,
+                str(now),
+                str(cutoff),
+                str(max_requests),
+                str(window_seconds),
+            )
+            is_limited = bool(res[0])
+            retry_after = int(res[1])
+            return is_limited, retry_after
         except Exception as e:
             logger.warning("Redis rate limit error, falling back to in-memory: %s", e)
             return await self._fallback.is_rate_limited(key, max_requests, window_seconds)
 
 
-_limiter_instance: Optional[BaseRateLimiter] = None
+_limiter_instance: BaseRateLimiter | None = None
 
 
 def get_rate_limiter() -> BaseRateLimiter:

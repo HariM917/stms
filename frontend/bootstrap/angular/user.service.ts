@@ -26,7 +26,7 @@ interface ApiResponse<T> {
 })
 export class UserService {
   // API base URL - update this based on your environment
-  private apiUrl = 'http://localhost:8001/api';
+  private apiUrl = '/api/v1/auth';
 
   constructor(private http: HttpClient) { }
 
@@ -34,9 +34,9 @@ export class UserService {
    * Get all users from the API
    */
   getUsers(): Observable<User[]> {
-    return this.http.get<ApiResponse<User>>(`${this.apiUrl}/users`)
+    return this.http.get<ApiResponse<User>>(`${this.apiUrl}/users`, { withCredentials: true })
       .pipe(
-        map(response => {
+        map((response: ApiResponse<User>) => {
           if (!response.success) {
             throw new Error(response.message || 'Failed to get users');
           }

@@ -423,6 +423,8 @@
             }
         }
         
+        const API_URL = (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') + '/api/v1';
+
         async function loadUserProfile() {
             try {
                 // First get basic info from localStorage
@@ -439,7 +441,7 @@
                 }
                 
                 // Now fetch complete profile from API
-                const response = await authenticatedFetch(`${API_URL}/user/profile`);
+                const response = await authenticatedFetch(`${API_URL}/auth/profile`);
                 
                 if (!response.ok) {
                     throw new Error('Failed to load user profile');
@@ -449,16 +451,16 @@
                 
                 // Update UI with additional profile data
                 document.getElementById('phone').value = profileData.phone || '';
-                document.getElementById('profile-join-date').textContent = new Date(profileData.createdAt).toLocaleDateString();
+                document.getElementById('profile-join-date').textContent = profileData.created_at ? new Date(profileData.created_at).toLocaleDateString() : '';
                 
                 if (profileData.role) {
                     document.getElementById('profile-role').textContent = profileData.role;
                     document.getElementById('sidebar-user-role').textContent = profileData.role;
                 }
                 
-                if (profileData.avatar) {
-                    document.getElementById('profile-avatar').src = profileData.avatar;
-                    document.getElementById('sidebar-user-avatar').src = profileData.avatar;
+                if (profileData.avatar_url) {
+                    document.getElementById('profile-avatar').src = profileData.avatar_url;
+                    document.getElementById('sidebar-user-avatar').src = profileData.avatar_url;
                 }
                 
                 // Update activity data
@@ -485,7 +487,7 @@
                 try {
                     setButtonLoading('update-profile-btn', true);
                     
-                    const response = await authenticatedFetch(`${API_URL}/user/profile`, {
+                    const response = await authenticatedFetch(`${API_URL}/auth/profile`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
@@ -496,12 +498,13 @@
                     const data = await response.json();
                     
                     if (!response.ok) {
-                        throw new Error(data.message || 'Failed to update profile');
+                        throw new Error(data.message || data.detail || 'Failed to update profile');
                     }
                     
                     // Update user in localStorage
-                    const user = getCurrentUser();
+                    const user = getCurrentUser() || {};
                     user.name = name;
+                    user.phone = phone;
                     localStorage.setItem('user', JSON.stringify(user));
                     
                     // Update UI
@@ -543,20 +546,25 @@
                 try {
                     setButtonLoading('update-password-btn', true);
                     
-                    const response = await authenticatedFetch(`${API_URL}/user/change-password`, {
+                    const response = await authenticatedFetch(`${API_URL}/auth/change-password`, {
                         method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json'
                         },
-                        body: JSON.stringify({ currentPassword, newPassword })
+                        body: JSON.stringify({ current_password: currentPassword, new_password: newPassword })
                     });
                     
                     const data = await response.json();
                     
                     if (!response.ok) {
-                        throw new Error(data.message || 'Failed to change password');
+                        throw new Error(data.message || data.detail || 'Failed to change password');
                     }
                     
+                    // If a new token was returned, update stored token
+                    if (data.token) {
+                        setToken(data.token);
+                    }
+
                     // Clear form
                     passwordForm.reset();
                     
@@ -580,12 +588,13 @@
             
             confirmDeleteBtn.addEventListener('click', async function() {
                 try {
-                    const response = await authenticatedFetch(`${API_URL}/user/delete-account`, {
+                    const response = await authenticatedFetch(`${API_URL}/auth/account`, {
                         method: 'DELETE'
                     });
                     
                     if (!response.ok) {
-                        throw new Error('Failed to delete account');
+                        const data = await response.json();
+                        throw new Error(data.detail || data.message || 'Failed to delete account');
                     }
                     
                     // Logout user

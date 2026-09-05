@@ -5,8 +5,8 @@ Consolidates all auth functionality (previously split between Python and Node.js
 into a single, clean set of endpoints.
 """
 from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
-from fastapi.responses import JSONResponse
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,8 +21,8 @@ from app.models.auth import (
     RegisterRequest,
     UserResponse,
 )
-from app.models.db.user import User
 from app.models.db.session import UserSession
+from app.models.db.user import User
 from app.repositories import user_repository
 from app.services.auth_service import (
     create_access_token,
@@ -201,6 +201,7 @@ async def logout(
 # ---- Profile ----
 
 @router.get("/profile", response_model=UserResponse)
+@router.get("/me", response_model=UserResponse, include_in_schema=False)
 async def get_profile(user: User = Depends(get_current_user)):
     """Get the current user's profile."""
     return _user_to_response(user)

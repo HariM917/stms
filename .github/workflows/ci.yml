@@ -55,15 +55,36 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
-          pip install pytest pytest-asyncio pytest-cov httpx
+          pip install ruff pytest pytest-asyncio pytest-cov httpx
 
-      - name: Run Database Migrations (Alembic)
+      - name: Compile Python Sources
+        run: |
+          python -m compileall backend/
+
+      - name: Lint with Ruff
+        run: |
+          ruff check backend/
+
+      - name: Run Database Migrations (Alembic Upgrade Head)
         working-directory: backend
         env:
           ENVIRONMENT: test
           DB_DRIVER: sqlite
         run: |
-          python -m alembic heads
+          python -m alembic upgrade head
+
+      - name: Verify PostgreSQL Migrations (Alembic Upgrade Head)
+        working-directory: backend
+        env:
+          ENVIRONMENT: development
+          DB_DRIVER: postgresql
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_USER: postgres
+          DB_PASSWORD: testpassword
+          DB_DATABASE: stms_test_db
+        run: |
+          python -m alembic upgrade head
 
       - name: Run Test Suite with Pytest
         working-directory: backend

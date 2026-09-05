@@ -2,9 +2,18 @@
  * Smart Traffic Management System - Frontend JavaScript
  */
 
-// API base URLs - change to your backend URLs in production
-const API_BASE_URL = 'http://localhost:8001/api';
-const AUTH_API_URL = 'http://localhost:3000/api';
+// API base URLs - dynamic versioned endpoints
+const API_BASE_URL = (typeof window !== 'undefined' ? window.location.origin : '') + '/api/v1';
+const AUTH_API_URL = `${API_BASE_URL}/auth`;
+
+function getAuthHeaders(headers = {}) {
+    const token = localStorage.getItem('token') || localStorage.getItem('stms_token');
+    const authHeaders = { ...headers };
+    if (token) {
+        authHeaders['Authorization'] = `Bearer ${token}`;
+    }
+    return authHeaders;
+}
 
 // DOM Elements
 document.addEventListener('DOMContentLoaded', () => {
@@ -95,6 +104,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const response = await fetch(`${API_BASE_URL}/detect/objects`, {
                 method: 'POST',
+                headers: getAuthHeaders(),
+                credentials: 'include',
                 body: formData
             });
             
@@ -133,6 +144,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const response = await fetch(`${API_BASE_URL}/detect/potholes`, {
                 method: 'POST',
+                headers: getAuthHeaders(),
+                credentials: 'include',
                 body: formData
             });
             
@@ -162,6 +175,8 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const response = await fetch(`${API_BASE_URL}/detect/weather`, {
                 method: 'POST',
+                headers: getAuthHeaders(),
+                credentials: 'include',
                 body: formData
             });
             
@@ -192,8 +207,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('file', file);
             
-            const response = await fetch(`${API_BASE_URL}/detect/traffic_signs`, {
+            const response = await fetch(`${API_BASE_URL}/detect/traffic-signs`, {
                 method: 'POST',
+                headers: getAuthHeaders(),
+                credentials: 'include',
                 body: formData
             });
             
@@ -221,8 +238,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const formData = new FormData();
             formData.append('file', file);
             
-            const response = await fetch(`${API_BASE_URL}/detect/railway_crossings`, {
+            const response = await fetch(`${API_BASE_URL}/detect/railway-crossing`, {
                 method: 'POST',
+                headers: getAuthHeaders(),
+                credentials: 'include',
                 body: formData
             });
             
@@ -251,12 +270,20 @@ document.addEventListener('DOMContentLoaded', () => {
             
             const response = await fetch(`${API_BASE_URL}/optimize/signals`, {
                 method: 'POST',
-                headers: {
+                headers: getAuthHeaders({
                     'Content-Type': 'application/json',
-                },
+                }),
+                credentials: 'include',
                 body: JSON.stringify({
                     junction_id: "junction_1",
-                    include_weather: true
+                    traffic_data: {
+                        vehicle_count: parseInt(vehicleCount.textContent) || 0,
+                        pedestrian_count: parseInt(pedestrianCount.textContent) || 0
+                    },
+                    weather_data: {
+                        condition: weatherCondition.textContent.toLowerCase() || 'clear',
+                        confidence: 1.0
+                    }
                 })
             });
             
@@ -310,15 +337,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 impact_factor: getWeatherImpactFactor(weatherCondition.textContent.toLowerCase())
             };
             
-            const response = await fetch(`${API_BASE_URL}/insights`, {
+            const prompt = `Traffic Analysis for junction_1: vehicles=${trafficData.vehicle_count}, pedestrians=${trafficData.pedestrian_count}, weather=${weatherData.condition}`;
+            const response = await fetch(`${API_BASE_URL}/generate/insights`, {
                 method: 'POST',
-                headers: {
+                headers: getAuthHeaders({
                     'Content-Type': 'application/json',
-                },
+                }),
+                credentials: 'include',
                 body: JSON.stringify({
-                    junction_id: "junction_1",
-                    traffic_data: trafficData,
-                    weather_data: weatherData
+                    prompt: prompt
                 })
             });
             

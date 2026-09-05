@@ -2,8 +2,9 @@
 AI traffic insights and advisory router.
 Generates analytical assessments and signal management recommendations for operators.
 """
-from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+import contextlib
+
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel, Field
 
 from app.middleware.auth_middleware import require_role
@@ -20,7 +21,7 @@ class InsightsRequest(BaseModel):
     prompt: str = Field(..., min_length=1, max_length=4000, description="Operator query or junction telemetry summary")
 
 
-def _generate_fallback_insights(prompt: str) -> List[str]:
+def _generate_fallback_insights(prompt: str) -> list[str]:
     """
     Context-aware rule-based advisory fallback.
     Clearly distinguishes AI analysis from physical actuation and avoids false dispatch claims.
@@ -31,10 +32,8 @@ def _generate_fallback_insights(prompt: str) -> List[str]:
     if "incident" in prompt_lower or "accident" in prompt_lower:
         location = "monitored junction"
         if "location:" in prompt_lower:
-            try:
+            with contextlib.suppress(Exception):
                 location = prompt.split("Location:")[1].split(",")[0].strip()
-            except Exception:
-                pass
 
         insights.append(
             f"⚠️ **Incident Assessment**: Localized congestion risk detected near **{location}**. "
@@ -59,6 +58,7 @@ def _generate_fallback_insights(prompt: str) -> List[str]:
 
 
 @router.post("/generate/insights")
+@router.post("/insights/generate", include_in_schema=False)
 @router.post("/insights", include_in_schema=False)
 async def generate_insights(
     body: InsightsRequest,

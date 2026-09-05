@@ -185,12 +185,11 @@
     
     <script>
         // Configuration
-        const AUTH_SERVER_URL = 'http://localhost:3000';
-        const API_SERVER_URL = 'http://localhost:8001';
-        const FRONTEND_URL = 'http://localhost:5000';
+        const API_SERVER_URL = (typeof window !== 'undefined' && window.location.origin ? window.location.origin : '') + '/api/v1';
+        const AUTH_SERVER_URL = API_SERVER_URL;
         
         // Store authentication token
-        let authToken = '';
+        let authToken = localStorage.getItem('authToken') || localStorage.getItem('stms_token') || '';
         
         // Helper functions
         function updateStatus(elementId, status, message) {
@@ -241,18 +240,18 @@
         // Server status checks
         async function checkAuthServer() {
             const resultElement = document.getElementById('auth-server-result');
-            resultElement.innerHTML = 'Checking auth server...';
+            resultElement.innerHTML = 'Checking auth service...';
             
             try {
-                const response = await fetch(`${AUTH_SERVER_URL}/`);
+                const response = await fetch(`/api/health`);
                 if (response.ok) {
                     const data = await response.json();
-                    updateStatus('auth-server-status', 'online', `Auth server is running<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`);
+                    updateStatus('auth-server-status', 'online', `Auth service is healthy<br>Status: ${data.status}`);
                 } else {
-                    updateStatus('auth-server-status', 'offline', `Auth server responded with status: ${response.status} ${response.statusText}`);
+                    updateStatus('auth-server-status', 'offline', `Auth service responded with status: ${response.status}`);
                 }
             } catch (error) {
-                updateStatus('auth-server-status', 'offline', `Error connecting to auth server: ${error.message}`);
+                updateStatus('auth-server-status', 'offline', `Error connecting to auth service: ${error.message}`);
             }
         }
         
@@ -261,12 +260,12 @@
             resultElement.innerHTML = 'Checking API server...';
             
             try {
-                const response = await fetch(`${API_SERVER_URL}/`);
+                const response = await fetch(`/api/health/live`);
                 if (response.ok) {
                     const data = await response.json();
-                    updateStatus('api-server-status', 'online', `API server is running<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`);
+                    updateStatus('api-server-status', 'online', `API server is live<br>Status: ${data.status}`);
                 } else {
-                    updateStatus('api-server-status', 'offline', `API server responded with status: ${response.status} ${response.statusText}`);
+                    updateStatus('api-server-status', 'offline', `API server responded with status: ${response.status}`);
                 }
             } catch (error) {
                 updateStatus('api-server-status', 'offline', `Error connecting to API server: ${error.message}`);
@@ -281,15 +280,16 @@
             const testUser = {
                 name: 'Test User',
                 email: `test${Date.now()}@example.com`,
-                password: 'Test123!'
+                password: 'TestPassword123!'
             };
             
             try {
-                const response = await fetch(`${AUTH_SERVER_URL}/api/register`, {
+                const response = await fetch(`${AUTH_SERVER_URL}/auth/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify(testUser)
                 });
                 
@@ -306,7 +306,7 @@
                     showResult(
                         'register-result', 
                         false, 
-                        `Registration failed: ${data.error || data.message || response.statusText}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                        `Registration failed: ${data.detail || data.message || response.statusText}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
                     );
                 }
             } catch (error) {
@@ -320,15 +320,16 @@
             
             const testUser = {
                 email: 'test@example.com',
-                password: 'Test123!'
+                password: 'TestPassword123!'
             };
             
             try {
-                const response = await fetch(`${AUTH_SERVER_URL}/api/login`, {
+                const response = await fetch(`${AUTH_SERVER_URL}/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify(testUser)
                 });
                 
@@ -345,7 +346,7 @@
                     showResult(
                         'login-result', 
                         false, 
-                        `Login failed: ${data.error || data.message || response.statusText}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
+                        `Login failed: ${data.detail || data.message || response.statusText}<br>Response: <pre>${JSON.stringify(data, null, 2)}</pre>`
                     );
                 }
             } catch (error) {
@@ -492,13 +493,9 @@
             results += '<strong>Step 1: Checking servers</strong><br>';
             
             try {
-                const authResponse = await fetch(`${AUTH_SERVER_URL}/`);
-                results += authResponse.ok ? '✅ Auth server is online<br>' : '❌ Auth server is offline<br>';
-                allPassed = allPassed && authResponse.ok;
-                
-                const apiResponse = await fetch(`${API_SERVER_URL}/`);
-                results += apiResponse.ok ? '✅ API server is online<br>' : '❌ API server is offline<br>';
-                allPassed = allPassed && apiResponse.ok;
+                const healthResponse = await fetch(`/api/health`);
+                results += healthResponse.ok ? '✅ STMS service is online and healthy<br>' : '❌ STMS service is offline<br>';
+                allPassed = allPassed && healthResponse.ok;
                 
                 // Step 2: Register a test user
                 results += '<br><strong>Step 2: Registering test user</strong><br>';
@@ -506,14 +503,15 @@
                 const testUser = {
                     name: 'E2E Test User',
                     email: `e2e_test_${Date.now()}@example.com`,
-                    password: 'E2ETest123!'
+                    password: 'E2ETestPassword123!'
                 };
                 
-                const registerResponse = await fetch(`${AUTH_SERVER_URL}/api/register`, {
+                const registerResponse = await fetch(`${AUTH_SERVER_URL}/auth/register`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
                     },
+                    credentials: 'include',
                     body: JSON.stringify(testUser)
                 });
                 

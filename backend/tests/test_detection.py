@@ -2,9 +2,10 @@
 Tests for the detection endpoints (using mock detectors).
 """
 import io
-import pytest
-import numpy as np
+
 import cv2
+import numpy as np
+import pytest
 
 
 def _create_test_image() -> bytes:

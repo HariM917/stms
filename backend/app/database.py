@@ -3,8 +3,8 @@ Async database engine, session factory, and dependency.
 
 Uses SQLAlchemy 2.0 async API with asyncpg (PostgreSQL) or aiosqlite (SQLite).
 """
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -105,6 +105,11 @@ async def init_db() -> None:
         async with engine.connect() as conn:
             await conn.execute(text("SELECT 1"))
         return
+
+    # Ensure all ORM models are registered in Base.metadata
+    import app.models.db.session  # noqa: F401
+    import app.models.db.traffic_report  # noqa: F401
+    import app.models.db.user  # noqa: F401
 
     engine = _get_engine()
     async with engine.begin() as conn:

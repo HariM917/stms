@@ -79,7 +79,7 @@
       <h3>Basic Usage</h3>
       <div class="code-block">
         <pre>// Create an instance of the API
-const api = new STMSUsersAPI('http://localhost:8001');
+const api = new STMSUsersAPI();
 
 // Get users
 api.getUsers().then(result => {
@@ -121,7 +121,7 @@ api.renderUsers(container, {
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       // Create API instance
-      const api = new STMSUsersAPI('http://localhost:8001');
+      const api = new STMSUsersAPI();
       
       // Options for rendering
       const options = {

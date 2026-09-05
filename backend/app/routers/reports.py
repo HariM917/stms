@@ -3,17 +3,17 @@ Traffic reports router — CRUD for traffic condition reports.
 Ported from the Node.js auth-server.js into the Python backend.
 """
 from datetime import datetime, timezone
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+
+from fastapi import APIRouter, Depends, Query, status
+from pydantic import BaseModel, Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.middleware.auth_middleware import get_current_user, require_role
-from app.models.db.user import User
+from app.middleware.auth_middleware import get_current_user
 from app.models.db.traffic_report import TrafficReport
+from app.models.db.user import User
 from app.repositories import report_repository
 from app.utils.logging import get_logger
-from pydantic import BaseModel, Field
-from typing import Optional
 
 logger = get_logger("reports")
 router = APIRouter(prefix="/reports", tags=["traffic reports"])
@@ -24,12 +24,12 @@ router = APIRouter(prefix="/reports", tags=["traffic reports"])
 class CreateReportRequest(BaseModel):
     """Request body for creating a traffic report."""
     junction_id: str = Field(..., min_length=1, max_length=100)
-    weather_condition: Optional[str] = Field(None, max_length=50)
-    congestion_level: Optional[float] = Field(None, ge=0.0, le=1.0)
-    vehicle_count: Optional[int] = Field(None, ge=0)
-    pedestrian_count: Optional[int] = Field(None, ge=0)
+    weather_condition: str | None = Field(None, max_length=50)
+    congestion_level: float | None = Field(None, ge=0.0, le=1.0)
+    vehicle_count: int | None = Field(None, ge=0)
+    pedestrian_count: int | None = Field(None, ge=0)
     railway_crossing_active: bool = False
-    notes: Optional[str] = Field(None, max_length=2000)
+    notes: str | None = Field(None, max_length=2000)
 
 
 class ReportResponse(BaseModel):
@@ -37,15 +37,15 @@ class ReportResponse(BaseModel):
     id: str
     junction_id: str
     report_time: str
-    weather_condition: Optional[str] = None
-    congestion_level: Optional[float] = None
-    vehicle_count: Optional[int] = None
-    pedestrian_count: Optional[int] = None
+    weather_condition: str | None = None
+    congestion_level: float | None = None
+    vehicle_count: int | None = None
+    pedestrian_count: int | None = None
     railway_crossing_active: bool = False
-    notes: Optional[str] = None
-    reporter_name: Optional[str] = None
-    type: Optional[str] = None
-    status: Optional[str] = None
+    notes: str | None = None
+    reporter_name: str | None = None
+    type: str | None = None
+    status: str | None = None
 
 
 def _report_to_response(report: TrafficReport) -> ReportResponse:

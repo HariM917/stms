@@ -2,13 +2,12 @@
 Application configuration loaded from environment variables.
 Uses pydantic-settings for validation and type safety.
 """
-from pathlib import Path
-from functools import lru_cache
-from typing import Optional
 import urllib.parse
-from pydantic_settings import BaseSettings
-from pydantic import Field, model_validator
+from functools import lru_cache
+from pathlib import Path
 
+from pydantic import Field, model_validator
+from pydantic_settings import BaseSettings
 
 KNOWN_INSECURE_SECRETS = {
     "change-me-in-production",
@@ -62,13 +61,13 @@ class Settings(BaseSettings):
     jwt_expiration_hours: int = 8
 
     # Bootstrap Admin (Optional: only create if explicitly set)
-    bootstrap_admin_email: Optional[str] = Field(default=None, alias="BOOTSTRAP_ADMIN_EMAIL")
-    bootstrap_admin_password: Optional[str] = Field(default=None, alias="BOOTSTRAP_ADMIN_PASSWORD", repr=False)
+    bootstrap_admin_email: str | None = Field(default=None, alias="BOOTSTRAP_ADMIN_EMAIL")
+    bootstrap_admin_password: str | None = Field(default=None, alias="BOOTSTRAP_ADMIN_PASSWORD", repr=False)
 
     # --- Rate Limiting & Redis ---
     rate_limit_requests: int = Field(default=100, alias="RATE_LIMIT_REQUESTS")
     rate_limit_window_seconds: int = Field(default=900, alias="RATE_LIMIT_WINDOW")  # 15 min
-    redis_url: Optional[str] = Field(default=None, alias="REDIS_URL")
+    redis_url: str | None = Field(default=None, alias="REDIS_URL")
 
     # --- Upload Limits ---
     max_upload_size_bytes: int = Field(default=10 * 1024 * 1024, alias="MAX_UPLOAD_SIZE_BYTES")  # 10MB
@@ -150,7 +149,11 @@ class Settings(BaseSettings):
     def database_url(self) -> str:
         """Synchronous database URL (for Alembic)."""
         if self.db_driver.strip().lower() == "sqlite":
-            return f"sqlite:///{self.root_dir / 'stms.db'}"
+            db_name = self.db_database if (self.db_database and self.db_database != "stms") else "stms.db"
+            if not db_name.endswith((".db", ".sqlite", ".sqlite3")):
+                db_name += ".db"
+            db_path = Path(db_name) if Path(db_name).is_absolute() else self.root_dir / db_name
+            return f"sqlite:///{db_path.as_posix()}"
         user = urllib.parse.quote_plus(self.db_user)
         pwd = urllib.parse.quote_plus(self.db_password)
         return (
@@ -162,7 +165,11 @@ class Settings(BaseSettings):
     def database_url_async(self) -> str:
         """Async database URL (for SQLAlchemy async engine)."""
         if self.db_driver.strip().lower() == "sqlite":
-            return f"sqlite+aiosqlite:///{self.root_dir / 'stms.db'}"
+            db_name = self.db_database if (self.db_database and self.db_database != "stms") else "stms.db"
+            if not db_name.endswith((".db", ".sqlite", ".sqlite3")):
+                db_name += ".db"
+            db_path = Path(db_name) if Path(db_name).is_absolute() else self.root_dir / db_name
+            return f"sqlite+aiosqlite:///{db_path.as_posix()}"
         user = urllib.parse.quote_plus(self.db_user)
         pwd = urllib.parse.quote_plus(self.db_password)
         return (
@@ -171,7 +178,7 @@ class Settings(BaseSettings):
         )
 
 
-@lru_cache()
+@lru_cache
 def get_settings() -> Settings:
     """Cached settings singleton. Call this to get the app configuration."""
     return Settings()

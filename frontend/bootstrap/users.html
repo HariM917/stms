@@ -117,7 +117,7 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Define the API URL
-            const API_URL = 'http://localhost:8001';
+            const API_URL = (typeof window !== 'undefined' ? window.location.origin : '') + '/api/v1';
             
             // Function to fetch users
             async function fetchUsers() {
@@ -129,8 +129,16 @@
                 userList.innerHTML = '';
                 
                 try {
+                    const token = localStorage.getItem('token') || localStorage.getItem('stms_token');
+                    const headers = {};
+                    if (token) {
+                        headers['Authorization'] = `Bearer ${token}`;
+                    }
                     // Send a GET request to the backend's API endpoint
-                    const response = await fetch(`${API_URL}/api/users`);
+                    const response = await fetch(`${API_URL}/auth/users`, {
+                        headers,
+                        credentials: 'include'
+                    });
                     
                     // Check if the response was successful
                     if (!response.ok) {
@@ -150,22 +158,23 @@
                             return;
                         }
                         
-                        // Populate the user list
+                        // Populate the user list using user-card style
                         data.users.forEach(user => {
                             const userCard = document.createElement('div');
                             userCard.className = 'user-card';
                             
                             const userName = document.createElement('div');
                             userName.className = 'user-name';
-                            userName.textContent = user.name;
+                            userName.textContent = user.name || user.email;
                             
                             const userEmail = document.createElement('div');
                             userEmail.className = 'user-email';
                             userEmail.textContent = user.email;
                             
                             const userRole = document.createElement('div');
-                            userRole.className = user.role === 'admin' ? 'user-role admin' : 'user-role';
-                            userRole.textContent = user.role || 'user';
+                            const role = (user.role || 'user').toLowerCase();
+                            userRole.className = role === 'admin' ? 'user-role admin' : 'user-role';
+                            userRole.textContent = role;
                             
                             userCard.appendChild(userName);
                             userCard.appendChild(userEmail);

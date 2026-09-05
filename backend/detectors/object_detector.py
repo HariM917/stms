@@ -2,8 +2,9 @@
 Object Detector Module for Smart Traffic Management System.
 Uses YOLOv8 for vehicle, pedestrian, and general obstacle detection.
 """
-from pathlib import Path
 import threading
+from pathlib import Path
+
 import numpy as np
 
 try:

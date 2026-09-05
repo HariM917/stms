@@ -3,6 +3,7 @@ Base Detector Module for Smart Traffic Management System.
 """
 from abc import ABC, abstractmethod
 from typing import Any
+
 import numpy as np
 
 

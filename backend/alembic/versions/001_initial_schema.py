@@ -1,18 +1,19 @@
 """001_initial_schema
 
 Revision ID: 001_initial_schema
-Revises: 
+Revises:
 Create Date: 2026-09-03 10:00:00.000000
 
 """
-from typing import Sequence, Union
-from alembic import op
+from collections.abc import Sequence
+
 import sqlalchemy as sa
+from alembic import op
 
 revision: str = '001_initial_schema'
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -23,10 +24,10 @@ def upgrade() -> None:
         sa.Column('email', sa.String(length=255), nullable=False),
         sa.Column('password_hash', sa.String(length=255), nullable=False),
         sa.Column('name', sa.String(length=100), nullable=False),
-        sa.Column('role', sa.String(length=20), nullable=False, server_default='user'),
+        sa.Column('role', sa.String(length=50), nullable=False, server_default='user'),
         sa.Column('phone', sa.String(length=20), nullable=True),
-        sa.Column('avatar_url', sa.String(length=500), nullable=True),
-        sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('1')),
+        sa.Column('avatar_url', sa.Text(), nullable=True),
+        sa.Column('is_active', sa.Boolean(), nullable=False, server_default=sa.text('true')),
         sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
         sa.PrimaryKeyConstraint('id')
@@ -39,8 +40,8 @@ def upgrade() -> None:
         'user_sessions',
         sa.Column('id', sa.String(length=36), nullable=False),
         sa.Column('user_id', sa.String(length=36), nullable=False),
-        sa.Column('ip_address', sa.String(length=45), nullable=True),
-        sa.Column('user_agent', sa.String(length=500), nullable=True),
+        sa.Column('ip_address', sa.String(length=50), nullable=True),
+        sa.Column('user_agent', sa.Text(), nullable=True),
         sa.Column('login_time', sa.DateTime(timezone=True), nullable=False),
         sa.Column('logout_time', sa.DateTime(timezone=True), nullable=True),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),
@@ -60,7 +61,7 @@ def upgrade() -> None:
         sa.Column('congestion_level', sa.Float(), nullable=True),
         sa.Column('vehicle_count', sa.Integer(), nullable=True),
         sa.Column('pedestrian_count', sa.Integer(), nullable=True),
-        sa.Column('railway_crossing_active', sa.Boolean(), nullable=False, server_default=sa.text('0')),
+        sa.Column('railway_crossing_active', sa.Boolean(), nullable=False, server_default=sa.text('false')),
         sa.Column('notes', sa.Text(), nullable=True),
         sa.Column('updated_at', sa.DateTime(timezone=True), nullable=False),
         sa.ForeignKeyConstraint(['user_id'], ['users.id'], ondelete='CASCADE'),

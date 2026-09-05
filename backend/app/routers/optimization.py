@@ -2,9 +2,10 @@
 Signal optimization router.
 Provides dynamic, constraint-checked traffic signal timings for operators and administrators.
 """
-from typing import Any, Dict, Optional
+import math
+
 from fastapi import APIRouter, Depends, HTTPException, status
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from app.middleware.auth_middleware import require_role
 from app.models.db.user import User
@@ -17,19 +18,26 @@ router = APIRouter(prefix="/optimize", tags=["optimization"])
 
 class TrafficDataInput(BaseModel):
     vehicle_count: int = Field(default=0, ge=0, le=10000, description="Total detected vehicles")
-    pedestrian_count: Optional[int] = Field(default=0, ge=0, le=5000, description="Total detected pedestrians")
+    pedestrian_count: int | None = Field(default=0, ge=0, le=5000, description="Total detected pedestrians")
 
 
 class WeatherDataInput(BaseModel):
-    condition: Optional[str] = Field(default="clear", max_length=50)
-    confidence: Optional[float] = Field(default=1.0, ge=0.0, le=1.0)
+    condition: str | None = Field(default="clear", max_length=50)
+    confidence: float | None = Field(default=1.0, ge=0.0, le=1.0)
+
+    @field_validator("confidence")
+    @classmethod
+    def validate_confidence(cls, v: float | None) -> float | None:
+        if v is not None and (math.isnan(v) or math.isinf(v)):
+            raise ValueError("confidence cannot be NaN or Infinity")
+        return v
 
 
 class OptimizationRequest(BaseModel):
     """Request body for signal optimization with strict schema constraints."""
     junction_id: str = Field(..., min_length=1, max_length=100, description="Unique junction identifier")
     traffic_data: TrafficDataInput = Field(default_factory=TrafficDataInput)
-    weather_data: Optional[WeatherDataInput] = None
+    weather_data: WeatherDataInput | None = None
 
 
 @router.post("/signals")
@@ -89,4 +97,4 @@ async def optimize_signals(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail="Failed to compute signal optimization.",
-        )
+        ) from e

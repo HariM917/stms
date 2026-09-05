@@ -2,8 +2,9 @@
 Utility functions for converting NumPy types to native Python types.
 Centralizes the conversion logic that was duplicated 5+ times in the monolith.
 """
-import numpy as np
 from typing import Any
+
+import numpy as np
 
 
 def deep_convert_numpy(obj: Any) -> Any:

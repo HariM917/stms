@@ -11,12 +11,10 @@ Verifies:
 - Magic byte validation (rejection of spoofed files)
 """
 import io
+
 import pytest
-from pydantic import ValidationError
 
 from app.config import Settings
-from app.services.auth_service import create_access_token
-
 
 # ---- Phase 2 & 11: Production Config Validation ----
 
@@ -143,7 +141,8 @@ async def test_deactivated_user_rejected(client, db_engine):
 
     # Deactivate user directly in DB
     from sqlalchemy import update
-    from sqlalchemy.ext.asyncio import async_sessionmaker, AsyncSession
+    from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
+
     from app.models.db.user import User
     session_factory = async_sessionmaker(bind=db_engine, class_=AsyncSession, expire_on_commit=False)
     async with session_factory() as session:
