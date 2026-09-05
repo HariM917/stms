@@ -39,15 +39,15 @@ class TrafficSignDetector(BaseDetector):
                 root_dir / "models" / "indian_traffic_sign_model.pt",
                 root_dir / "ai_models" / "indian_traffic_sign_model.pt",
                 root_dir / "ai_models" / "indian_traffic_sign_model.pth",
+                root_dir / "ai_models" / "yolov8n.pt",
+                root_dir / "models" / "yolov8n.pt",
                 root_dir / "yolov8n.pt",
                 Path("yolov8n.pt"),
             ]
             for p in candidate_paths:
-                if p.exists() and p.stat().st_size > 10_000:
+                if p.exists() and p.is_file() and p.stat().st_size > 10_000:
                     model_path = str(p)
                     break
-            if model_path is None:
-                model_path = str(root_dir / "yolov8n.pt")
 
         super().__init__(model_path=model_path, confidence_threshold=confidence_threshold)
         self.classes = INDIAN_TRAFFIC_SIGNS
@@ -60,21 +60,33 @@ class TrafficSignDetector(BaseDetector):
             self.model = None
             return
 
-        try:
+        if self.model_path:
             p = Path(self.model_path)
-            if p.exists() and p.stat().st_size > 10_000:
-                self.model = YOLO(str(p))
-                print(f"Traffic sign model loaded from {self.model_path}")
-            else:
-                fallback = Path(__file__).resolve().parent.parent / "yolov8n.pt"
-                if fallback.exists():
+            if p.exists() and p.is_file() and p.stat().st_size > 10_000:
+                try:
+                    self.model = YOLO(str(p))
+                    print(f"Traffic sign model loaded from {self.model_path}")
+                    return
+                except Exception as e:
+                    print(f"Error loading traffic sign model from {self.model_path}: {e}")
+
+        # Fallback to YOLO model if available on disk
+        root_dir = Path(__file__).resolve().parent.parent
+        for fallback in [
+            root_dir / "ai_models" / "yolov8n.pt",
+            root_dir / "models" / "yolov8n.pt",
+            root_dir / "yolov8n.pt",
+            Path("yolov8n.pt"),
+        ]:
+            if fallback.exists() and fallback.is_file() and fallback.stat().st_size > 10_000:
+                try:
                     self.model = YOLO(str(fallback))
                     print(f"Loaded general YOLO model as traffic sign fallback from {fallback}")
-                else:
-                    self.model = None
-        except Exception as e:
-            print(f"Error loading traffic sign model: {e}")
-            self.model = None
+                    return
+                except Exception:
+                    pass
+
+        self.model = None
 
     def preprocess(self, frame: np.ndarray) -> np.ndarray:
         return frame

@@ -24,17 +24,15 @@ class ObjectDetector(BaseDetector):
         if model_path is None:
             root_dir = Path(__file__).resolve().parent.parent
             candidate_paths = [
-                root_dir / "yolov8n.pt",
-                root_dir / "models" / "yolov8n.pt",
                 root_dir / "ai_models" / "yolov8n.pt",
+                root_dir / "models" / "yolov8n.pt",
+                root_dir / "yolov8n.pt",
                 Path("yolov8n.pt"),
             ]
             for p in candidate_paths:
-                if p.exists():
+                if p.exists() and p.is_file() and p.stat().st_size > 10_000:
                     model_path = str(p)
                     break
-            if model_path is None:
-                model_path = "yolov8n.pt"
 
         super().__init__(model_path=model_path, confidence_threshold=confidence_threshold)
         self.classes = None
@@ -48,8 +46,19 @@ class ObjectDetector(BaseDetector):
             self.model = None
             return
 
+        if not self.model_path:
+            print("No model path found — YOLO detector unavailable")
+            self.model = None
+            return
+
+        p = Path(self.model_path)
+        if not p.is_file() or p.stat().st_size <= 10_000:
+            print(f"YOLO model file not found or invalid at {self.model_path}")
+            self.model = None
+            return
+
         try:
-            self.model = YOLO(self.model_path)
+            self.model = YOLO(str(p))
             print(f"YOLO model loaded from {self.model_path}")
         except Exception as e:
             print(f"Error loading YOLO model: {e}")

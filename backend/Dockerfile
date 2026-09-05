@@ -54,13 +54,8 @@ COPY llm/ ./llm/
 COPY alembic.ini ./
 COPY alembic/ ./alembic/
 
-# Copy models if present
-COPY ai_models/ ./ai_models/
-COPY models/ ./models/
-COPY yolov8n.pt* ./
-
-# Create operational directories with non-root ownership
-RUN mkdir -p logs snapshots uploads \
+# Create runtime volume mount points and operational directories with non-root ownership
+RUN mkdir -p /app/ai_models /app/models logs snapshots uploads \
     && chown -R stms:stms /app
 
 USER stms
