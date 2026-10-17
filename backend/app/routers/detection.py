@@ -163,8 +163,7 @@ async def detect_potholes(
 async def detect_weather(
     file: UploadFile = File(...),
     user: User = Depends(get_current_user),
-):
-    
+):    
     """Detect weather conditions from an image (authenticated)."""
     image = await read_image_file(file)
 
