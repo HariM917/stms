@@ -28,16 +28,31 @@ async def _run_detection(
 ):
     """
     Shared detection pipeline used by detection endpoints.
-    1. Read image safely  2. Run detector  3. Post-process  4. Draw visualization  5. Return
+    1. Read image safely
+    2. Check detector availability
+    3. Run detector
+    4. Post-process
+    5. Draw visualization
+    6. Return
     """
+
+    # Step 1: Validate and decode the uploaded image first.
+    image = await read_image_file(file)
+
+    # Step 2: Only after the input is valid, check detector availability.
     detector = detector_service.get_detector(detector_name)
+
     if detector is None:
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"success": False, "message": f"{detector_name.replace('_', ' ').title()} detector temporarily unavailable"},
+            content={
+                "success": False,
+                "message": (
+                    f"{detector_name.replace('_', ' ').title()} "
+                    "detector temporarily unavailable"
+                ),
+            },
         )
-
-    image = await read_image_file(file)
 
     is_mock = detector_service.is_mock(detector)
 
@@ -149,15 +164,19 @@ async def detect_weather(
     file: UploadFile = File(...),
     user: User = Depends(get_current_user),
 ):
+    
     """Detect weather conditions from an image (authenticated)."""
+    image = await read_image_file(file)
+
     detector = detector_service.get_detector("weather")
     if detector is None:
         return JSONResponse(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"success": False, "message": "Weather detector temporarily unavailable"},
-        )
-
-    image = await read_image_file(file)
+            content={
+             "success": False,
+             "message": "Weather detector temporarily unavailable",
+        },
+    )
     is_mock = detector_service.is_mock(detector)
 
     try:
@@ -197,14 +216,17 @@ async def detect_railway_crossing(
     user: User = Depends(get_current_user),
 ):
     """Detect railway crossings and trains in an image (authenticated)."""
+    image = await read_image_file(file)
+
     detector = detector_service.get_detector("railway_crossing")
     if detector is None:
-        return JSONResponse(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            content={"success": False, "message": "Railway crossing detector temporarily unavailable"},
-        )
-
-    image = await read_image_file(file)
+     return JSONResponse(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        content={
+            "success": False,
+            "message": "Railway crossing detector temporarily unavailable",
+        },
+    )
     is_mock = detector_service.is_mock(detector)
 
     try:

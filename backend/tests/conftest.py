@@ -3,7 +3,10 @@ Shared test fixtures for the STMS test suite.
 
 Uses an in-memory SQLite database and httpx AsyncClient for fast, isolated tests.
 """
+
 import os
+
+os.environ["ALLOW_MOCK_MODELS"] = "true"
 
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
